@@ -49,7 +49,6 @@
 #include <tf/tf.h>
 
 #include <QFileDialog>
-
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -74,13 +73,14 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   ui_->setupUi(this);
 
   wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
-
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
   connect(ui_->topic_line_edit, SIGNAL(editingFinished()), this, SLOT(topicChanged()));
   connect(ui_->frame_line_edit, SIGNAL(editingFinished()), this, SLOT(frameChanged()));
   connect(ui_->wp_height_doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(heightChanged(double)));
+  connect(ui_->TimeBox, SIGNAL(valueChanged(double)), this, SLOT(timeChanged(double)));
   connect(ui_->clear_all_button, SIGNAL(clicked()), this, SLOT(clearAllWaypoints()));
+  connect(ui_->display2D, SIGNAL(stateChanged(int)), this, SLOT(bool2DChanged(int)));
 
   connect(ui_->x_doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(poseChanged(double)));
   connect(ui_->y_doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(poseChanged(double)));
@@ -222,7 +222,6 @@ void WaypointFrame::loadButtonClicked()
 void WaypointFrame::publishButtonClicked()
 {
   nav_msgs::Path path;
-
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
   {
@@ -245,6 +244,9 @@ void WaypointFrame::publishButtonClicked()
   }
 
   path.header.frame_id = frame_id_.toStdString();
+  ros::NodeHandle nh;
+  nh.setParam("/total_time", getTime());
+  nh.setParam("/display_2D", get2Ddisplay());
   wp_pub_.publish(path);
 }
 
@@ -270,6 +272,23 @@ void WaypointFrame::heightChanged(double h)
 {
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   default_height_ = h;
+}
+
+void WaypointFrame::timeChanged(double t)
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  total_time_ = t;
+}
+
+void WaypointFrame::bool2DChanged(int b)
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  if (b ==2){
+	  display_2D = true;
+  }
+  else{
+	 display_2D = false;
+  }
 }
 
 void WaypointFrame::setSelectedMarkerName(std::string name)
@@ -458,6 +477,19 @@ double WaypointFrame::getDefaultHeight()
 {
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   return default_height_;
+}
+
+double WaypointFrame::getTime()
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  return total_time_;
+}
+
+
+bool WaypointFrame::get2Ddisplay()
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  return display_2D;
 }
 
 QString WaypointFrame::getFrameId()

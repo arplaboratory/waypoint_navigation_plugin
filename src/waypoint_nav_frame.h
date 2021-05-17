@@ -100,6 +100,8 @@ public:
 
 
   double getDefaultHeight();
+  double getTime();
+  bool get2Ddisplay();
   QString getFrameId();
   QString getOutputTopic();
   void getPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
@@ -113,6 +115,8 @@ private Q_SLOTS:
   void publishButtonClicked();
   void clearAllWaypoints();
   void heightChanged(double h);
+  void timeChanged(double t);
+  void bool2DChanged(int b);
   void frameChanged();
   void topicChanged();
   void poseChanged(double val);
@@ -134,7 +138,8 @@ private:
 
   //default height the waypoint must be placed at
   double default_height_;
-
+  double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
+  bool display_2D = false; // Jef additional boolean 
   // The current name of the output topic.
   QString output_topic_;
   QString frame_id_;
