@@ -47,7 +47,7 @@ void outputListiner(const nav_msgs::Odometry &msg){
 
 nav_msgs::Path navmsgsPath(){
 	nav_msgs::Path msg; 
-	if (size < 5){
+	if (size < 2){
 		return msg;
 	}
 	msg.header.frame_id = "simulator";
@@ -58,7 +58,7 @@ nav_msgs::Path navmsgsPath(){
 	rot.z = 0;
 	rot.w = 1;
 	int index = Tail; 
-	for (int k = 0; k < size-4; k++) {
+	for (int k = 0; k < size-2; k++) {
 			geometry_msgs::PoseStamped ps;
 			geometry_msgs::Pose pose;
 			geometry_msgs::Point point;
@@ -98,7 +98,10 @@ int main(int argc, char **argv)
 
 	while(ros::ok()) {
 		ros::spinOnce();
-		quad_path.publish(navmsgsPath());
+		// wait for at
+		if (size  > 5){
+			quad_path.publish(navmsgsPath());
+		}
 	}
     return 0;
 }
