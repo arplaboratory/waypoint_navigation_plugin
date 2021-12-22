@@ -1,0 +1,12 @@
+ <launch>
+   <param name="frame_name" type="str" value="simulator"/>     
+
+   <param name="odom_topic" type="str" value="/quadrotor/odom"/>    
+
+   <param name="LENGTH"  type="int" value="100"/>    
+
+   <node name="quadrotor_path" pkg="quadrotor_path" type="quadrotor_path" output="screen">
+   </node>
+  
+
+</launch>
