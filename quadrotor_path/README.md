@@ -9,4 +9,3 @@ LENGTH - This package will track 0.1*Length so 100 is 10M of tracking
 OUTPUT
 quadrotor_path_VIO - The topic of the path it will output out
 
-blah blahd
