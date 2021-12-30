@@ -596,10 +596,12 @@ void WaypointFrame::goto_push_button(){
 	}
 	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
 	mav_manager::Vec4 srv;
-  	srv.request.goal [0] = ui_->x_doubleSpinBox_gt->value();
- 	srv.request.goal [1] = ui_->y_doubleSpinBox_gt->value();
-  	srv.request.goal [2] = ui_->z_doubleSpinBox_gt->value();
-  	srv.request.goal [3] = ui_->yaw_doubleSpinBox_gt->value();
+	float goal[4];
+  	goal[0] = ui_->x_doubleSpinBox_gt->value();
+ 	goal[1] = ui_->y_doubleSpinBox_gt->value();
+  	goal[2] = ui_->z_doubleSpinBox_gt->value();
+  	goal[3] = ui_->yaw_doubleSpinBox_gt->value();
+	srv.request.goal = goal;
 	if (client.call(srv))
 	{
 		ROS_INFO("GoTo Success");

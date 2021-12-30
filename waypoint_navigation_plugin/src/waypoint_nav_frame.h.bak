@@ -48,7 +48,7 @@
 #include <nav_msgs/Path.h>
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
-#include <mav_manager/Vec4.h>
+#include <mav_manager/srv/Vec4.h>
 
 #include "ui_WaypointNavigation.h"
 
