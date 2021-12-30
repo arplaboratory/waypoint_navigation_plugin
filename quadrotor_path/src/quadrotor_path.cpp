@@ -12,6 +12,7 @@ nav_msgs::Odometry  * odom_buffer;
 int Head = 0;
 int Tail = 0;
 int size = 0;
+std::string frame_id="simulator"; //frame id 
 
 void outputListiner(const nav_msgs::Odometry &msg){
 	static bool not_first_read = false;
@@ -50,7 +51,7 @@ nav_msgs::Path navmsgsPath(){
 	if (size < 2){
 		return msg;
 	}
-	msg.header.frame_id = "simulator";
+	msg.header.frame_id = frame_id;
 	msg.header.stamp = ros::Time::now();
 	geometry_msgs::Quaternion rot;
 	rot.x = 0;
@@ -83,7 +84,6 @@ nav_msgs::Path navmsgsPath(){
 
 int main(int argc, char **argv)
 {
-	std::string frame_id="simulator";
 	std::string odom_frame="/quadrotor/odom";
 
     ros::init(argc,argv,"quadrotor_path");
