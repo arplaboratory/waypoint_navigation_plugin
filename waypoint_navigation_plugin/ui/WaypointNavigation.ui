@@ -263,6 +263,12 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label">
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>X</string>
        </property>
@@ -273,6 +279,12 @@
      </item>
      <item>
       <widget class="QLabel" name="label_2">
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>Y:</string>
        </property>
@@ -283,6 +295,12 @@
      </item>
      <item>
       <widget class="QLabel" name="label_3">
+       <property name="maximumSize">
+        <size>
+         <width>10</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>Z:</string>
        </property>
@@ -293,6 +311,12 @@
      </item>
      <item>
       <widget class="QLabel" name="label_4">
+       <property name="maximumSize">
+        <size>
+         <width>35</width>
+         <height>16777215</height>
+        </size>
+       </property>
        <property name="text">
         <string>Yaw:</string>
        </property>
@@ -358,6 +382,13 @@
      </property>
      <property name="text">
       <string>QP Waypoint Nav.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="go_home_button">
+     <property name="text">
+      <string>Go Home</string>
      </property>
     </widget>
    </item>

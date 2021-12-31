@@ -100,13 +100,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->takeoff_push_button, SIGNAL(clicked()), this, SLOT(takeoff_push_button()));
   connect(ui_->goto_push_button, SIGNAL(clicked()), this, SLOT(goto_push_button()));
   connect(ui_->relative_checkbox, SIGNAL(stateChanged(int)), this, SLOT(relativeChanged(int)));
-
-  
-  //GoTO Values Connnect
- //connect(ui_->x_doubleSpinBox_gt, SIGNAL(valueChanged(float)));
- //connect(ui_->y_doubleSpinBox_gt, SIGNAL(valueChanged(float)));
- //connect(ui_->z_doubleSpinBox_gt, SIGNAL(valueChanged(float)));
- //connect(ui_->yaw_doubleSpinBox_gt, SIGNAL(valueChanged(float)));
+  connect(ui_->go_home_button, SIGNAL(clicked()), this, SLOT(goHome_push_button()));
 
 }
 
@@ -635,6 +629,26 @@ void WaypointFrame::serviceChanged(){
   mav_node_name =  new_frame.toStdString();
 }
 
+void WaypointFrame::goHome_push_button(){
+    boost::mutex::scoped_lock lock(frame_updates_mutex_);
+	ros::NodeHandle nh;
+	std::string srvs_name;
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
+	mav_manager::Vec4 srv;
+  	srv.request.goal [0] = 0;
+ 	srv.request.goal [1] = 0;
+  	srv.request.goal [2] = 0.5;
+  	srv.request.goal [3] = 0;
+	if (client.call(srv))
+	{
+		ROS_INFO("Go Home Success");
+	}
+	else
+	{	
+		ROS_ERROR("Failed Go Home ");
+	}		
 
+}
 
 } // namespace
