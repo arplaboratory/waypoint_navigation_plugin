@@ -275,7 +275,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="x_doubleSpinBox_gt"/>
+      <widget class="QDoubleSpinBox" name="x_doubleSpinBox_gt">
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_2">
@@ -291,7 +295,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="y_doubleSpinBox_gt"/>
+      <widget class="QDoubleSpinBox" name="y_doubleSpinBox_gt">
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_3">
@@ -307,7 +315,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="z_doubleSpinBox_gt"/>
+      <widget class="QDoubleSpinBox" name="z_doubleSpinBox_gt">
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_4">
