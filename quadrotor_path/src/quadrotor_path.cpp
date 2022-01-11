@@ -70,7 +70,7 @@ nav_msgs::Path navmsgsPath(){
 			pose.position = point;
 			pose.orientation = rot;
 			ps.pose = pose;
-			ps.header.frame_id =  "simulator";
+			ps.header.frame_id = frame_id;
 			ps.header.stamp = ros::Time::now();
 			ps.header.seq = k;
 			msg.poses.push_back(ps);
