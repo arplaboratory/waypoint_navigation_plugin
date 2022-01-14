@@ -335,7 +335,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="yaw_doubleSpinBox_gt"/>
+      <widget class="QDoubleSpinBox" name="yaw_doubleSpinBox_gt">
+       <property name="minimum">
+        <double>-99.000000000000000</double>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -401,6 +405,13 @@
     <widget class="QPushButton" name="go_home_button">
      <property name="text">
       <string>Go Home</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="hover">
+     <property name="text">
+      <string>Hover</string>
      </property>
     </widget>
    </item>

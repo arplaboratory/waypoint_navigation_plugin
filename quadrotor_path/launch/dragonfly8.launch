@@ -1,8 +1,8 @@
  <launch>
-   <param name="frame_name" type="str" value="/camera_odom_frame"/>     
+   <param name="frame_name" type="str" value="/world"/>     
 
-   <!--param name="odom_topic" type="str" value="/dragonfly8/quadrotor_ukf/control_odom"/-->    
-   <param name="odom_topic" type="str" value="/race3/odom/sample"/>   
+   <param name="odom_topic" type="str" value="/dragonfly8/quadrotor_ukf/control_odom"/>    
+   <!--param name="odom_topic" type="str" value="/race1/odom/sample"/-->   
    <!--param name="odom_topic" type="str" value="/voxl1/quadrotor_ukf/control_odom"/-->     
    <param name="LENGTH"  type="int" value="1000"/>    
 

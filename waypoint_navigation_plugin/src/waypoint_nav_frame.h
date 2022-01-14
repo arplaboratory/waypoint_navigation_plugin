@@ -135,7 +135,7 @@ private Q_SLOTS:
   void robotChanged();
   void serviceChanged();
   void goHome_push_button();
-
+  void hover_push_button();
 
 private:
 

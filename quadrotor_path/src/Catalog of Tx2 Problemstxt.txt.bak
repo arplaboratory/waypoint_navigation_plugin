@@ -1,0 +1,15 @@
+Catalog of problems
+
+Screws slipping out from the legs.
+
+Screws are easily stripped. Plastic won't do. unless we want screws stuck in our motor.
+
+Y-axis is a bit unstable
+
+Yaw problem - Rough FIX related to linear vleocity in body frame temporary fix. 
+
+Angular Velcotiy - Needs Fix as well 
+
+Increase Offboard ARM TIME OUT
+
+RPM Closed Loop on ESC 

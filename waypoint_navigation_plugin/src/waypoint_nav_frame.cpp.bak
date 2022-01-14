@@ -552,7 +552,7 @@ void WaypointFrame::motors_off_push_button(){
 void WaypointFrame::hover_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	ros::NodeHandle nh;
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
+	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/ehover";
 	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	std_srvs::Trigger srv;
 	if (client.call(srv))

@@ -13,12 +13,13 @@ int Head = 0;
 int Tail = 0;
 int size = 0;
 std::string frame_id="simulator"; //frame id 
-
+nav_msgs::Odometry last_point;
 void outputListiner(const nav_msgs::Odometry &msg){
 	static bool not_first_read = false;
 	//if buffer isn't full check if the last value has the same time stamp
 	//if the time stamps are the same then remove it redundent call backs bad. 
 	int index = Head -1;
+	last_point = msg;
 	if(index < 0){
 		index +=BUFFER_SIZE;
 	}
@@ -70,7 +71,7 @@ nav_msgs::Path navmsgsPath(){
 			pose.position = point;
 			pose.orientation = rot;
 			ps.pose = pose;
-			ps.header.frame_id =  "simulator";
+			ps.header.frame_id = frame_id;
 			ps.header.stamp = ros::Time::now();
 			ps.header.seq = k;
 			msg.poses.push_back(ps);
@@ -93,14 +94,19 @@ int main(int argc, char **argv)
 	n.getParam("/odom_topic", odom_frame);
 	odom_buffer = new nav_msgs::Odometry[BUFFER_SIZE];
     ros::Publisher quad_path = n.advertise<nav_msgs::Path> ("quadrotor_path_VIO", 1);
+	ros::Publisher current_pos = n.advertise<nav_msgs::Odometry> ("current_pos", 1);
 
     ros::Subscriber pub_cloudsub = n.subscribe(odom_frame, 10, outputListiner);
 
 	while(ros::ok()) {
 		ros::spinOnce();
 		// wait for atleast two messages to be published before starting
+		nav_msgs::Odometry point_now =  last_point;
+		point_now.header.frame_id = frame_id;
+		current_pos.publish(point_now);
 		if (size  > 2){
 			quad_path.publish(navmsgsPath());
+
 		}
 	}
     return 0;
