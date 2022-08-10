@@ -11,7 +11,7 @@ int BUFFER_SIZE = 100;
 nav_msgs::Odometry  * odom_buffer;
 int Head = 0;
 int Tail = 0;
-int size = 0;
+int current_size = 0;
 std::string frame_id="simulator"; //frame id 
 nav_msgs::Odometry last_point;
 void outputListiner(const nav_msgs::Odometry &msg){
@@ -33,7 +33,7 @@ void outputListiner(const nav_msgs::Odometry &msg){
 		if (distance < 0.01){
 			return;
 		}
-		size+=1;
+		current_size+=1;
 	}
 	//std::cout << Head <<std::endl;
 	odom_buffer[Head] = msg;
@@ -42,14 +42,14 @@ void outputListiner(const nav_msgs::Odometry &msg){
 		Tail = (Tail+1)%BUFFER_SIZE;
 	}
 	not_first_read = true;
-	if(size > BUFFER_SIZE){
-		size = BUFFER_SIZE;
+	if(current_size > BUFFER_SIZE){
+		current_size = BUFFER_SIZE;
 	}
 }
 
 nav_msgs::Path navmsgsPath(){
 	nav_msgs::Path msg; 
-	if (size < 2){
+	if (current_size < 2){
 		return msg;
 	}
 	msg.header.frame_id = frame_id;
@@ -60,7 +60,7 @@ nav_msgs::Path navmsgsPath(){
 	rot.z = 0;
 	rot.w = 1;
 	int index = Tail; 
-	for (int k = 0; k < size-2; k++) {
+	for (int k = 0; k < current_size-2; k++) {
 			geometry_msgs::PoseStamped ps;
 			geometry_msgs::Pose pose;
 			geometry_msgs::Point point;
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 		nav_msgs::Odometry point_now =  last_point;
 		point_now.header.frame_id = frame_id;
 		current_pos.publish(point_now);
-		if (size  > 2){
+		if (current_size  > 2){
 			quad_path.publish(navmsgsPath());
 
 		}
