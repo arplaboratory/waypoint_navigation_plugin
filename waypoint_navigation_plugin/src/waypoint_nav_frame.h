@@ -144,8 +144,13 @@ private Q_SLOTS:
   void topicChanged();
   void poseChanged(double val);
 
+
+  void rollChanged(double val);
+  void pitchChanged(double val);
+
   void saveButtonClicked();
   void loadButtonClicked();
+  void perchClicked();
 
   //Buttons RQT MAV MANAGER
   void motors_on_push_button();
@@ -198,6 +203,8 @@ private:
   bool bern_enable_ = false;
   bool replan_enable_ = false;
   bool topicOverride = false;
+  double roll_=0.0;
+  double pitch_=0.0;
 
   // The current name of the output topic.
   QString output_topic_;

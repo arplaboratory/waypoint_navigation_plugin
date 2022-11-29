@@ -90,6 +90,8 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->save_wp_button, SIGNAL(clicked()), this, SLOT(saveButtonClicked()));
   connect(ui_->load_wp_button, SIGNAL(clicked()), this, SLOT(loadButtonClicked()));
   
+  connect(ui_->perch, SIGNAL(clicked()), this, SLOT(perchClicked()));
+
   //ROSRUN RQT Mav Manager Line topics 
   connect(ui_->robot_name_line_edit, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
   connect(ui_->node_name_line_edit, SIGNAL(editingFinished()), this, SLOT(serviceChanged()));
@@ -106,7 +108,10 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
 
+  connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
+
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
+  nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
 
 /*
   connect(ui_->bern_pl, SIGNAL(valueChanged(double)), this, SLOT(pl_ineqChanged(double)));
@@ -352,15 +357,56 @@ void WaypointFrame::publishButtonClicked()
   path.header.frame_id = frame_id_.toStdString();
   nh_.setParam("/total_time", getTime());
   nh_.setParam("/display_2D", get2Ddisplay());
+  nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
+
   if(!getTopicOveride()){
     std::string topic_name = "/waypoints";
-    if(getBernEnable()){
+    /*if(getBernEnable()){
       topic_name = "/b_waypoints";
+    }*/
+    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
+  }
+  wp_pub_.publish(path);
+}
+
+
+void WaypointFrame::perchClicked()
+{
+  nav_msgs::Path path;
+  std::map<int, Ogre::SceneNode* >::iterator sn_it;
+  for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
+  {
+    Ogre::Vector3 position;
+    position = sn_it->second->getPosition();
+
+    geometry_msgs::PoseStamped pos;
+    pos.pose.position.x = position.x;
+    pos.pose.position.y = position.y;
+    pos.pose.position.z = position.z;
+
+    Ogre::Quaternion quat;
+    quat = sn_it->second->getOrientation();
+    pos.pose.orientation.x = quat.x;
+    pos.pose.orientation.y = quat.y;
+    pos.pose.orientation.z = quat.z;
+    pos.pose.orientation.w = quat.w;
+
+    path.poses.push_back(pos);
+  }
+
+  path.header.frame_id = frame_id_.toStdString();
+  nh_.setParam("/total_time", getTime());
+  nh_.setParam("/display_2D", get2Ddisplay());
+  if(!getTopicOveride()){
+    std::string topic_name = "/perch";
+    if(getBernEnable()){
+      topic_name = "/b_perch";
     }
     wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
   }
   wp_pub_.publish(path);
 }
+
 
 
 void WaypointFrame::clearAllWaypoints()

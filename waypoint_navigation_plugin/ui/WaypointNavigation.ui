@@ -194,6 +194,13 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="3">
+      <widget class="QSlider" name="z_size">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="2">
       <widget class="QSlider" name="y_size">
        <property name="orientation">
@@ -215,13 +222,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QSlider" name="x_size">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="3">
       <widget class="QLabel" name="label_10">
        <property name="text">
@@ -229,8 +229,8 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="3">
-      <widget class="QSlider" name="z_size">
+     <item row="1" column="1">
+      <widget class="QSlider" name="x_size">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -495,7 +495,7 @@
      <item>
       <widget class="QLabel" name="label_11">
        <property name="text">
-        <string>Roll</string>
+        <string>Roll (world)</string>
        </property>
       </widget>
      </item>
@@ -515,7 +515,7 @@
      <item>
       <widget class="QLabel" name="label_12">
        <property name="text">
-        <string>Pitch</string>
+        <string>Pitch (world)</string>
        </property>
       </widget>
      </item>
@@ -530,7 +530,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="perch">
        <property name="text">
         <string>Perch</string>
        </property>
