@@ -1,6 +1,6 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 75
+    Help Height: 78
     Name: Displays
     Property Tree Widget:
       Expanded:
@@ -11,10 +11,12 @@ Panels:
         - /Path2
         - /MarkerArray1
         - /Marker2
-        - /VoxbloxMesh1
-        - /PointCloud21
+        - /Path3
+        - /MarkerArray2
+        - /Odometry1
+        - /Odometry1/Shape1
       Splitter Ratio: 0.3958333432674408
-    Tree Height: 70
+    Tree Height: 719
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -79,10 +81,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        quadrotor:
-          Value: true
-        simulator:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 1
       Name: TF
@@ -90,9 +88,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        simulator:
-          quadrotor:
-            {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -116,7 +112,7 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
-      Topic: /traj_exe/trajectory_QP
+      Topic: /trajectory_QP
       Unreliable: false
       Value: true
     - Class: rviz/InteractiveMarkers
@@ -176,56 +172,72 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
-    - Class: voxblox_rviz_plugin/VoxbloxMesh
-      Enabled: true
-      Name: VoxbloxMesh
-      Queue Size: 10
-      Topic: /voxblox_node/mesh
-      Unreliable: false
-      Value: true
     - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 245; 121; 0
       Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Min Color: 0; 0; 0
-      Name: PointCloud2
-      Position Transformer: XYZ
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
       Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic: /voxblox_node/traversable
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /quadrotor_path/quadrotor_path_VIO
       Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /voxblox_node/occupied_nodes
+      Marker Topic: /corridors
       Name: MarkerArray
       Namespaces:
         {}
       Queue Size: 100
       Value: true
-    - Class: rviz/MarkerArray
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
       Enabled: true
-      Marker Topic: /voxblox_node_holo/corridors
-      Name: MarkerArray
-      Namespaces:
-        {}
-      Queue Size: 100
+      Keep: 1
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Queue Size: 1
+      Shape:
+        Alpha: 1
+        Axes Length: 0.5
+        Axes Radius: 0.05000000074505806
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Axes
+      Topic: /dragonfly8/odom
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -255,12 +267,12 @@ Visualization Manager:
       WaypointsTool:
         default_height: 4.5609462416844146e-41
         frame_id: simulator
-        topic: /waypoints
+        topic: dragonfly8/waypoints
   Value: true
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.17663860321045
+      Distance: 2.6103925704956055
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -276,9 +288,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.07479725778102875
+      Pitch: 0.17979809641838074
       Target Frame: <Fixed Frame>
-      Yaw: 1.5785768032073975
+      Yaw: 4.918578147888184
     Saved: ~
 Window Geometry:
   Displays:
@@ -286,7 +298,7 @@ Window Geometry:
   Height: 1016
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000002450000035ffc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000000ce000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000010004b007200430061006d006500720061000000021a000000d20000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000218000000d40000000000000000fb00000010004b007200430061006d0065007200610200000994000001ed0000013c000000e2fb00000010004b007200430061006d0065007200610300000962000001eb0000013c000000e6fb000000260057006100790070006f0069006e00740020004e0061007600690067006100740069006f006e01000001110000028b0000027a00ffffff000000010000010f0000035ffc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d0000035f000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073600000039fc0100000002fb0000000800540069006d0065010000000000000736000003cc00fffffffb0000000800540069006d00650100000000000004500000000000000000000003d60000035f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002450000035afc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d0000035a000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000010004b007200430061006d006500720061000000021a000000d20000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000218000000d40000000000000000fb00000010004b007200430061006d0065007200610200000994000001ed0000013c000000e2fb00000010004b007200430061006d0065007200610300000962000001eb0000013c000000e600000001000001d30000035afc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fc0000003d0000035a0000028800fffffffa000000000100000002fb000000260057006100790070006f0069006e00740020004e0061007600690067006100740069006f006e0100000000ffffffff000001c300fffffffb0000000a00560069006500770073000000062e0000010f0000010000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007360000003efc0100000002fb0000000800540069006d0065010000000000000736000003cc00fffffffb0000000800540069006d00650100000000000004500000000000000000000003120000035a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

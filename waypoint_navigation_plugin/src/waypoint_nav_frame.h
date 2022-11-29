@@ -49,8 +49,17 @@
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
 #include <mav_manager/Vec4.h>
-
+#include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
+#include <visualization_msgs/MarkerArray.h>
+
+
+typedef struct {
+    int derivOrder, vertexNum;
+    Eigen::Vector4d lower, upper;
+    bool enable; //Declares wether this constraint is active or not
+} waypoint_ineq_const;
+
 
 namespace Ogre
 {
@@ -102,13 +111,20 @@ public:
   void setPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
 
 
+  bool getTopicOveride();
+  bool getBernEnable();
+  
   double getDefaultHeight();
   double getTime();
   bool get2Ddisplay();
   QString getFrameId();
   QString getOutputTopic();
   void getPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
-
+  void display_corridros();
+  void setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable);
+  std::vector<waypoint_ineq_const> ineq_list;
+  void push_newIneq_const();
+  void ineqChanged(double val,int mode, int axis);
 protected:
 
   Ui::WaypointNavigationWidget *ui_;
@@ -120,11 +136,22 @@ private Q_SLOTS:
   void heightChanged(double h);
   void timeChanged(double t);
   void bool2DChanged(int b);
+  void bern_enable(int b);
+  void replan_enable(int b);
+  void topic_enable(int b);
+
   void frameChanged();
   void topicChanged();
   void poseChanged(double val);
+
+
+  void rollChanged(double val);
+  void pitchChanged(double val);
+
   void saveButtonClicked();
   void loadButtonClicked();
+  void perchClicked();
+
   //Buttons RQT MAV MANAGER
   void motors_on_push_button();
   void motors_off_push_button();
@@ -137,10 +164,28 @@ private Q_SLOTS:
   void goHome_push_button();
   void hover_push_button();
 
+
+   //Bernstein Check boxes
+
+
+  //Inequality cahgned for each double box
+  /*
+  void pl_ineqChanged(double val);
+  void xl_ineqChanged(double val);
+  void yl_ineqChanged(double val);
+  void zl_ineqChanged(double val);
+  void pu_ineqChanged(double val);
+  void xu_ineqChanged(double val);
+  void yu_ineqChanged(double val);
+  void zu_ineqChanged(double val);
+  void en_ineqChanged(double val);
+  void do_ineqChanged(double val);*/
+
 private:
 
   ros::NodeHandle nh_;
   ros::Publisher wp_pub_;
+  ros::Publisher pub_corridor_;
 
   WaypointNavTool* wp_nav_tool_;
   //pointers passed via contructor
@@ -153,8 +198,14 @@ private:
   //default height the waypoint must be placed at
   double default_height_;
   double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
-  bool display_2D = false; // Jef additional boolean 
+  bool display_2D = false; // Jeff additional boolean 
   bool relative_ = true;
+  bool bern_enable_ = false;
+  bool replan_enable_ = false;
+  bool topicOverride = false;
+  double roll_=0.0;
+  double pitch_=0.0;
+
   // The current name of the output topic.
   QString output_topic_;
   QString frame_id_;
@@ -166,7 +217,7 @@ private:
 
   //mutex for changes of variables
   boost::mutex frame_updates_mutex_;
-
+  visualization_msgs::MarkerArray marker_array;
   std::string selected_marker_name_;
 
 };

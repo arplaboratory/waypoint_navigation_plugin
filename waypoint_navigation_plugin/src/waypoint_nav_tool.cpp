@@ -303,7 +303,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     frame_->setSelectedMarkerName(wp_name_str);
     frame_->setWpLabel(p);
     frame_->setPose(p, q);
-
+    frame_->push_newIneq_const();
     server_.applyChanges();
 }
 
@@ -397,7 +397,8 @@ void WaypointNavTool::processFeedback(
         frame_->setWpLabel(position);
         frame_->setPose(position, quat);
         frame_->setSelectedMarkerName(feedback->marker_name);
-
+        waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
+        frame_->setLimit(ineq.upper,ineq.lower,ineq.enable);
       }
     }
      break;

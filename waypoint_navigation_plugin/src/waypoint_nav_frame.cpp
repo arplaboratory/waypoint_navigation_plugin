@@ -71,7 +71,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
 
   // set up the GUI
   ui_->setupUi(this);
-
+	pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
   wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
@@ -90,6 +90,8 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->save_wp_button, SIGNAL(clicked()), this, SLOT(saveButtonClicked()));
   connect(ui_->load_wp_button, SIGNAL(clicked()), this, SLOT(loadButtonClicked()));
   
+  connect(ui_->perch, SIGNAL(clicked()), this, SLOT(perchClicked()));
+
   //ROSRUN RQT Mav Manager Line topics 
   connect(ui_->robot_name_line_edit, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
   connect(ui_->node_name_line_edit, SIGNAL(editingFinished()), this, SLOT(serviceChanged()));
@@ -102,6 +104,29 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->relative_checkbox, SIGNAL(stateChanged(int)), this, SLOT(relativeChanged(int)));
   connect(ui_->go_home_button, SIGNAL(clicked()), this, SLOT(goHome_push_button()));
   connect(ui_->hover, SIGNAL(clicked()), this, SLOT(hover_push_button()));
+  connect(ui_->bern_enable, SIGNAL(stateChanged(int)), this, SLOT(bern_enable(int)));
+  connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
+  connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
+
+  connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
+
+  nh_.setParam("/"+ robot_name+"/"+"replan",false);
+  nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
+
+/*
+  connect(ui_->bern_pl, SIGNAL(valueChanged(double)), this, SLOT(pl_ineqChanged(double)));
+  connect(ui_->bern_xl, SIGNAL(valueChanged(double)), this, SLOT(xl_ineqChanged(double)));
+  connect(ui_->bern_yl, SIGNAL(valueChanged(double)), this, SLOT(yl_ineqChanged(double)));
+  connect(ui_->bern_zl, SIGNAL(valueChanged(double)), this, SLOT(zl_ineqChanged(double)));
+
+  connect(ui_->bern_pu, SIGNAL(valueChanged(double)), this, SLOT(pu_ineqChanged(double)));
+  connect(ui_->bern_xu, SIGNAL(valueChanged(double)), this, SLOT(xu_ineqChanged(double)));
+  connect(ui_->bern_yu, SIGNAL(valueChanged(double)), this, SLOT(yu_ineqChanged(double)));
+  connect(ui_->bern_zu, SIGNAL(valueChanged(double)), this, SLOT(zu_ineqChanged(double)));
+
+  connect(ui_->ineq_enable, SIGNAL(valueChanged(double)), this, SLOT(en_ineqChanged(double)));
+  connect(ui_->deriv_order, SIGNAL(valueChanged(double)), this, SLOT(do_ineqChanged(double)));
+*/
 
 }
 
@@ -122,6 +147,20 @@ void WaypointFrame::disable()
   wp_pub_.shutdown();
   hide();
 }
+
+
+void WaypointFrame::bern_enable(int b)
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  if (b ==2){
+	  bern_enable_ = true;
+  }
+  else{
+	  bern_enable_ = false;
+  }
+
+}
+
 
 void WaypointFrame::saveButtonClicked()
 {
@@ -232,6 +271,65 @@ void WaypointFrame::loadButtonClicked()
   }
 }
 
+
+void WaypointFrame::push_newIneq_const(){
+  //inequality helper function
+  waypoint_ineq_const ineq_const;
+	ineq_const.derivOrder = 0;
+  Eigen::Vector4d lower, upper;
+  lower << 0.0, 0.0, 0.0, 0;
+  upper << 0.0, 0.0, 0.0, 0;
+  ineq_const.lower = lower;
+  ineq_const.upper = upper;
+  ineq_const.enable = false;
+  ineq_list.push_back(ineq_const);
+  setLimit( upper,  lower, false);
+}
+
+
+
+void WaypointFrame::setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable)
+{
+  //boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  //block spinbox signals
+  /*
+  ui_->bern_pl->blockSignals(true);
+  ui_->bern_xl->blockSignals(true);
+  ui_->bern_yl->blockSignals(true);
+  ui_->bern_zl->blockSignals(true);
+  ui_->bern_pu->blockSignals(true);
+  ui_->bern_xu->blockSignals(true);
+  ui_->bern_yu->blockSignals(true);
+  ui_->bern_zu->blockSignals(true);
+  ui_->ineq_enable->blockSignals(true);
+
+
+
+  ui_->bern_xl->setValue(lower[0]);
+  ui_->bern_yl->setValue(lower[1]);
+  ui_->bern_zl->setValue(lower[2]);
+  ui_->bern_pl->setValue(lower[3]);
+  ui_->bern_xu->setValue(upper[0]);
+  ui_->bern_yu->setValue(upper[1]);
+  ui_->bern_zu->setValue(upper[2]);
+  ui_->bern_pu->setValue(upper[3]);
+  ui_->ineq_enable->setValue(enable);
+
+
+  //enable the signals
+  ui_->bern_pl->blockSignals(false);
+  ui_->bern_xl->blockSignals(false);
+  ui_->bern_yl->blockSignals(false);
+  ui_->bern_zl->blockSignals(false);
+  ui_->bern_pu->blockSignals(false);
+  ui_->bern_xu->blockSignals(false);
+  ui_->bern_yu->blockSignals(false);
+  ui_->bern_zu->blockSignals(false);
+  ui_->ineq_enable->blockSignals(false);*/
+
+}
+
+
 void WaypointFrame::publishButtonClicked()
 {
   nav_msgs::Path path;
@@ -257,11 +355,59 @@ void WaypointFrame::publishButtonClicked()
   }
 
   path.header.frame_id = frame_id_.toStdString();
-  ros::NodeHandle nh;
-  nh.setParam("/total_time", getTime());
-  nh.setParam("/display_2D", get2Ddisplay());
+  nh_.setParam("/total_time", getTime());
+  nh_.setParam("/display_2D", get2Ddisplay());
+  nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
+
+  if(!getTopicOveride()){
+    std::string topic_name = "/waypoints";
+    /*if(getBernEnable()){
+      topic_name = "/b_waypoints";
+    }*/
+    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
+  }
   wp_pub_.publish(path);
 }
+
+
+void WaypointFrame::perchClicked()
+{
+  nav_msgs::Path path;
+  std::map<int, Ogre::SceneNode* >::iterator sn_it;
+  for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
+  {
+    Ogre::Vector3 position;
+    position = sn_it->second->getPosition();
+
+    geometry_msgs::PoseStamped pos;
+    pos.pose.position.x = position.x;
+    pos.pose.position.y = position.y;
+    pos.pose.position.z = position.z;
+
+    Ogre::Quaternion quat;
+    quat = sn_it->second->getOrientation();
+    pos.pose.orientation.x = quat.x;
+    pos.pose.orientation.y = quat.y;
+    pos.pose.orientation.z = quat.z;
+    pos.pose.orientation.w = quat.w;
+
+    path.poses.push_back(pos);
+  }
+
+  path.header.frame_id = frame_id_.toStdString();
+  nh_.setParam("/total_time", getTime());
+  nh_.setParam("/display_2D", get2Ddisplay());
+  if(!getTopicOveride()){
+    std::string topic_name = "/perch";
+    if(getBernEnable()){
+      topic_name = "/b_perch";
+    }
+    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
+  }
+  wp_pub_.publish(path);
+}
+
+
 
 void WaypointFrame::clearAllWaypoints()
 {
@@ -303,6 +449,32 @@ void WaypointFrame::bool2DChanged(int b)
 	 display_2D = false;
   }
 }
+
+void WaypointFrame::replan_enable(int b)
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  ros::NodeHandle nh;
+  if (b ==2){
+	  replan_enable_ = true;
+
+  }
+  else{
+	 replan_enable_ = false;
+  }
+  nh_.setParam("/"+ robot_name+"/"+"replan",replan_enable_);
+}
+
+void WaypointFrame::topic_enable(int b)
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  if (b ==2){
+	  topicOverride = true;
+  }
+  else{
+	 topicOverride = false;
+  }
+}
+
 
 void WaypointFrame::setSelectedMarkerName(std::string name)
 {
@@ -347,6 +519,90 @@ void WaypointFrame::poseChanged(double val)
     server_->applyChanges();
   }
 }
+
+
+void WaypointFrame::display_corridros(){
+  marker_array.markers.clear();
+  for(int i =0;i<ineq_list.size()-1;i++){
+      visualization_msgs::Marker marker;
+			marker.ns = "basic_shapes";
+			marker.id = i;
+			marker.type = 1; //CUBE
+			// Set the marker action.  Options are ADD and DELETE
+			marker.action = visualization_msgs::Marker::DELETE;
+      marker_array.markers.push_back(marker);
+  }
+  pub_corridor_.publish(marker_array);
+  marker_array.markers.clear();
+  for(int i =0;i<ineq_list.size()-1;i++){
+    if(ineq_list[i].enable==1){
+      visualization_msgs::Marker marker;
+      Eigen::Vector4d l= ineq_list[i].lower;
+      Eigen::Vector4d u= ineq_list[i].upper;
+      marker.header.frame_id=frame_id_.toStdString();
+      marker.pose.position.x = 0.5*(l[0]+u[0]);
+      marker.pose.position.y = 0.5*(l[1]+u[1]);
+      marker.pose.position.z = 0.5*(l[2]+u[2]);
+
+      marker.pose.orientation.w = 1.0;
+      marker.pose.orientation.x = 0.0;
+      marker.pose.orientation.y = 0.0;
+      marker.pose.orientation.z = 0.0;
+
+      marker.scale.x = abs(u[0]-l[0]);
+      marker.scale.y = abs(u[1]-l[1]);
+      marker.scale.z = abs(u[2]-l[2]);
+      marker.color.r = 0.0;
+      marker.color.g = 1.0;
+      marker.color.b = 0.0;
+      marker.color.a = 0.2;
+
+			marker.ns = "basic_shapes";
+			marker.id = i;
+			// Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
+			marker.type = 1; //CUBE
+			// Set the marker action.  Options are ADD and DELETE
+			marker.action = visualization_msgs::Marker::ADD;
+      marker_array.markers.push_back(marker);
+    }
+  }
+  pub_corridor_.publish(marker_array);
+}
+
+
+void WaypointFrame::ineqChanged(double val, int mode, int axes)
+{
+  int index = std::stoi(selected_marker_name_.substr(8))-1;
+  if (index >= ineq_list.size())
+    ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
+  else
+  {
+    if(mode ==0){
+      ineq_list[index].lower[axes] = val;
+    }
+    else if(mode==1){
+      ineq_list[index].upper[axes] = val;
+
+    }
+    else if(mode==2){
+      if(val > 0.4){
+        ineq_list[index].enable = true;
+      }
+      else{
+        ineq_list[index].enable = false;
+      }
+
+    }
+    else if(mode == 3){
+        ineq_list[index].derivOrder = val;
+    }
+    else{
+      return;
+    }
+    display_corridros();
+  }
+}
+
 
 void WaypointFrame::frameChanged()
 {
@@ -498,6 +754,18 @@ double WaypointFrame::getTime()
   return total_time_;
 }
 
+bool WaypointFrame::getTopicOveride()
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  return topicOverride;
+}
+
+bool WaypointFrame::getBernEnable()
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  return bern_enable_;
+}
+
 
 bool WaypointFrame::get2Ddisplay()
 {
@@ -519,9 +787,8 @@ QString WaypointFrame::getOutputTopic()
 
   //Buttons RQT MAV MANAGER
 void WaypointFrame::motors_on_push_button(){
-	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	ros::ServiceClient client = nh.serviceClient<std_srvs::SetBool>(srvs_name);
+	ros::ServiceClient client = nh_.serviceClient<std_srvs::SetBool>(srvs_name);
 	std_srvs::SetBool srv;
 	srv.request.data = true;
 	if (client.call(srv))
@@ -632,13 +899,12 @@ void WaypointFrame::relativeChanged(int b){
 	 relative_ = false;
   }
 }
+
+
 void WaypointFrame::robotChanged(){ 
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
-  
-
-
 }
 
 void WaypointFrame::serviceChanged(){
@@ -666,7 +932,47 @@ void WaypointFrame::goHome_push_button(){
 	{	
 		ROS_ERROR("Failed Go Home ");
 	}		
+  }
 
-}
+}//namespace
 
-} // namespace
+/*
+  void WaypointFrame::pl_ineqChanged(double val){
+    ineqChanged(val, 0,3);
+  }
+  void WaypointFrame::xl_ineqChanged(double val){
+    ineqChanged(val, 0,0);
+
+  }
+  void WaypointFrame::yl_ineqChanged(double val){
+    ineqChanged(val, 0,1);
+
+  }  
+  void WaypointFrame::zl_ineqChanged(double val){
+    ineqChanged(val, 0,2);
+
+  }  
+  void WaypointFrame::pu_ineqChanged(double val){
+    ineqChanged(val, 1,3);
+
+  }  
+  void WaypointFrame::xu_ineqChanged(double val){
+    ineqChanged(val, 1,0);
+  }
+
+  void WaypointFrame::yu_ineqChanged(double val){
+    ineqChanged(val, 1,1);
+  }
+
+  void WaypointFrame::zu_ineqChanged(double val){
+    ineqChanged(val, 1,2);
+  }  
+
+  void WaypointFrame::en_ineqChanged(double val){
+    ineqChanged(val, 2,0);
+  }
+
+  void WaypointFrame::do_ineqChanged(double val){
+    ineqChanged(val, 3,0);
+  }
+} // namespace*/
