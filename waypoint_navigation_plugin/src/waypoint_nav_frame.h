@@ -48,6 +48,7 @@
 #include <nav_msgs/Path.h>
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
+#include <std_srvs/Empty.h>
 #include <mav_manager/Vec4.h>
 #include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
@@ -163,7 +164,7 @@ private Q_SLOTS:
   void serviceChanged();
   void goHome_push_button();
   void hover_push_button();
-
+  void clear_map();
 
    //Bernstein Check boxes
 

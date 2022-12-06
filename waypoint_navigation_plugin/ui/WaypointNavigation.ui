@@ -444,6 +444,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="reset_map">
+       <property name="text">
+        <string>Reset Map</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="land_push_button">
        <property name="text">
         <string>Land</string>

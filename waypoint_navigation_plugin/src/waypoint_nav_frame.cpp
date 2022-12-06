@@ -107,8 +107,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->bern_enable, SIGNAL(stateChanged(int)), this, SLOT(bern_enable(int)));
   connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
-
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
+
+  connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
 
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
   nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
@@ -785,6 +786,19 @@ QString WaypointFrame::getOutputTopic()
   return output_topic_;
 }
 
+  //Clear Map
+void WaypointFrame::clear_map(){
+	ros::ServiceClient client = nh_.serviceClient<std_srvs::Empty>("/voxblox_node/clear_map");
+	std_srvs::Empty srv;
+  client.waitForExistence();
+  if (client.call(srv)){
+      ROS_ERROR("Successfully called service clear_map");
+  }else{
+      ROS_ERROR("Successfully called Failed clear_map");
+  }
+}
+
+
   //Buttons RQT MAV MANAGER
 void WaypointFrame::motors_on_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
@@ -800,6 +814,7 @@ void WaypointFrame::motors_on_push_button(){
 		ROS_ERROR("FAILED TO START MOTORS");
 	}	
 }
+
 void WaypointFrame::motors_off_push_button(){
 	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
