@@ -302,7 +302,7 @@
    <item row="11" column="2" colspan="3">
     <widget class="QLineEdit" name="frame_line_edit">
      <property name="text">
-      <string>/map</string>
+      <string>world</string>
      </property>
     </widget>
    </item>
