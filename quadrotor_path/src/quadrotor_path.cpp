@@ -7,12 +7,12 @@
 #include <memory>
 
 using namespace std;
-int BUFFER_SIZE = 100;
+int BUFFER_SIZE = 5000;
 nav_msgs::Odometry  * odom_buffer;
 int Head = 0;
 int Tail = 0;
 int current_size = 0;
-std::string frame_id="simulator"; //frame id 
+std::string frame_id="world"; //frame id 
 nav_msgs::Odometry last_point;
 void outputListiner(const nav_msgs::Odometry &msg){
 	static bool not_first_read = false;
