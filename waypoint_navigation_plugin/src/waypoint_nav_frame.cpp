@@ -335,6 +335,15 @@ void WaypointFrame::publishButtonClicked()
 {
   nav_msgs::Path path;
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
+  if(!getTopicOveride()){
+    std::string topic_name = "/waypoints";
+    /*if(getBernEnable()){
+      topic_name = "/b_waypoints";
+    }*/
+    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
+    ros::Duration(0.30).sleep();
+  }
+  
   for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
   {
     Ogre::Vector3 position;
@@ -360,13 +369,7 @@ void WaypointFrame::publishButtonClicked()
   nh_.setParam("/display_2D", get2Ddisplay());
   nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
 
-  if(!getTopicOveride()){
-    std::string topic_name = "/waypoints";
-    /*if(getBernEnable()){
-      topic_name = "/b_waypoints";
-    }*/
-    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
-  }
+
   wp_pub_.publish(path);
 }
 
