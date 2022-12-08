@@ -793,7 +793,7 @@ QString WaypointFrame::getOutputTopic()
 void WaypointFrame::clear_map(){
 	ros::ServiceClient client = nh_.serviceClient<std_srvs::Empty>("/voxblox_node/clear_map");
 	std_srvs::Empty srv;
-  client.waitForExistence();
+  //client.waitForExistence();
   if (client.call(srv)){
       ROS_ERROR("Successfully called service clear_map");
   }else{
