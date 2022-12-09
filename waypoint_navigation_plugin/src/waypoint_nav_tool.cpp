@@ -280,9 +280,9 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     int_marker.controls.push_back(cyn_control);
 
     visualization_msgs::InteractiveMarkerControl control;
-    control.orientation.w = 1;
+    control.orientation.w =  0.707106781;
     control.orientation.x = 0;
-    control.orientation.y = 1;
+    control.orientation.y =  0.707106781;
     control.orientation.z = 0;
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE;
     int_marker.controls.push_back(control);
@@ -291,6 +291,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 
     control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MENU;
     control.name = "menu_delete";
+    control.description = wp_name_str.substr(8);
     int_marker.controls.push_back(control);
 
     server_.insert(int_marker);
