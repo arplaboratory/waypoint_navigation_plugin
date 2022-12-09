@@ -795,7 +795,7 @@ void WaypointFrame::clear_map(){
 	std_srvs::Empty srv;
   //client.waitForExistence();
   if (client.call(srv)){
-      ROS_ERROR("Successfully called service clear_map");
+      ROS_INFO("Successfully called service clear_map");
   }else{
       ROS_ERROR("Failed clear_map");
   }
