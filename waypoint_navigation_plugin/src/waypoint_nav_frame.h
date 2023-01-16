@@ -43,6 +43,7 @@
 #endif
 
 #include <QWidget>
+#include <iostream>
 
 #include "ros/ros.h"
 #include <nav_msgs/Path.h>
@@ -61,6 +62,8 @@ typedef struct {
     bool enable; //Declares wether this constraint is active or not
 } waypoint_ineq_const;
 
+  static const std::string Deriv_title[5] = { "'Pos'", "'Vel'", "'accel'", "'jerk'" , "'snap'"};
+  static const std::string append[5] = { "Pos", "Vel", "accel", "jerk" , "snap"};
 
 namespace Ogre
 {
@@ -187,6 +190,16 @@ private:
   ros::NodeHandle nh_;
   ros::Publisher wp_pub_;
   ros::Publisher pub_corridor_;
+
+  ros::Subscriber path_listen_;
+  ros::Subscriber vel_listen_;
+  ros::Subscriber acc_listen_;
+
+  void pos_listen(const nav_msgs::Path &msg);
+  void vel_listen(const nav_msgs::Path &msg);
+  void acc_listen(const nav_msgs::Path &msg);
+  void display(const nav_msgs::Path &msg, int index);
+
 
   WaypointNavTool* wp_nav_tool_;
   //pointers passed via contructor

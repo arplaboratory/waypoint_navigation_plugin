@@ -73,6 +73,8 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   ui_->setupUi(this);
 	pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
   wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
+  
+
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
   connect(ui_->topic_line_edit, SIGNAL(editingFinished()), this, SLOT(topicChanged()));
@@ -113,6 +115,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
 
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
   nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
+	path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
+	vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
+	acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
 
 /*
   connect(ui_->bern_pl, SIGNAL(valueChanged(double)), this, SLOT(pl_ineqChanged(double)));
@@ -732,6 +737,56 @@ void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   }
 }
 
+void WaypointFrame::pos_listen(const nav_msgs::Path &msg){
+  if(get2Ddisplay()){
+    display(msg,0);
+  }
+}
+
+void WaypointFrame::vel_listen(const nav_msgs::Path &msg){
+  if(get2Ddisplay()){
+    display(msg,1);
+  }
+
+}
+
+void WaypointFrame::acc_listen(const nav_msgs::Path &msg){
+  if(get2Ddisplay()){
+    display(msg,2);
+  }
+}
+
+void WaypointFrame::display(const nav_msgs::Path &msg, int order){
+	double dt = 0.01;
+	//Record File 
+	std::ofstream outFileX;
+	std::ofstream outFileY;
+	std::ofstream outFileZ;
+	std::string title = Deriv_title[order];
+	std::string der_app = append[order];
+	outFileX.open("tempX"+der_app +".dat");
+	outFileY.open("tempY"+der_app +".dat");
+	outFileZ.open("tempZ"+der_app +".dat");
+	for (int j=0; j< msg.poses.size(); j++){
+    geometry_msgs::PoseStamped ps = msg.poses[j];	
+    double time = ps.header.stamp.toSec();	
+    outFileX << time;
+		outFileX << " " << ps.pose.position.x << std::endl;
+		outFileY << time;
+		outFileY << " " <<ps.pose.position.y << std::endl;
+		outFileZ << time;
+		outFileZ << " " << ps.pose.position.z << std::endl;
+	}
+	outFileX.close();
+	outFileY.close();
+	outFileZ.close();
+	// VISUALIZATION
+  GnuplotPipe gp;
+	gp.sendLine("set title " + title);
+  gp.sendLine("plot 'tempX"+ der_app +".dat' , 'tempY"+ der_app +".dat', 'tempZ"+ der_app +".dat' ");
+}
+
+
 void WaypointFrame::setWpLabel(Ogre::Vector3 position)
 {
   {
@@ -923,6 +978,16 @@ void WaypointFrame::robotChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
+  path_listen_.shutdown();
+  vel_listen_.shutdown();
+  acc_listen_.shutdown();
+
+	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
+	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
+	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
+
+
+
 }
 
 void WaypointFrame::serviceChanged(){
