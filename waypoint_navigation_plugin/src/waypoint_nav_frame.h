@@ -44,7 +44,7 @@
 
 #include <QWidget>
 #include <iostream>
-
+#include "gnuplot.h"
 #include "ros/ros.h"
 #include <nav_msgs/Path.h>
 #include <std_srvs/SetBool.h>
