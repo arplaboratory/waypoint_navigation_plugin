@@ -150,8 +150,8 @@ private Q_SLOTS:
   void poseChanged(double val);
 
 
-  void rollChanged(double val);
-  void pitchChanged(double val);
+  //void rollChanged(double val);
+  //void pitchChanged(double val);
 
   void saveButtonClicked();
   void loadButtonClicked();

@@ -4,7 +4,10 @@ This directory contains both waypoint_navigation_plugin and quadrotor_path
 
 Prerequisite for 2D plotting
 Install
+
+```
 sudo apt-get install gnuplot
+```
 
 Waypoint navigation contains a GUI dependent on ARPL_msgs. quadrotor_path contains a buffer for msgs of a certain odometry for visualization.
 Waypoint navigation contains rqt_mav_manager. To use qp_tracker
