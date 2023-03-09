@@ -49,6 +49,7 @@
 #include <nav_msgs/Path.h>
 #include <std_srvs/SetBool.h>
 #include <std_srvs/Trigger.h>
+#include <std_msgs/Bool.h>
 #include <std_srvs/Empty.h>
 #include <mav_manager/Vec4.h>
 #include <Eigen/Sparse>
@@ -168,7 +169,7 @@ private Q_SLOTS:
   void goHome_push_button();
   void hover_push_button();
   void clear_map();
-
+  void clear_path();
    //Bernstein Check boxes
 
 
@@ -190,7 +191,8 @@ private:
   ros::NodeHandle nh_;
   ros::Publisher wp_pub_;
   ros::Publisher pub_corridor_;
-
+  ros::Publisher path_clear_pub_;
+  
   ros::Subscriber path_listen_;
   ros::Subscriber vel_listen_;
   ros::Subscriber acc_listen_;

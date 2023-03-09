@@ -71,10 +71,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
 
   // set up the GUI
   ui_->setupUi(this);
-	pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
+  pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
   wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
-  
-
+  path_clear_pub_ = nh_.advertise<std_msgs::Bool>("/clear", 1);
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
   connect(ui_->topic_line_edit, SIGNAL(editingFinished()), this, SLOT(topicChanged()));
@@ -110,7 +109,8 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
-
+  connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
+  
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
 
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
@@ -152,6 +152,12 @@ void WaypointFrame::disable()
 {
   wp_pub_.shutdown();
   hide();
+}
+
+void WaypointFrame::clear_path()
+{
+   std_msgs::Bool thing;
+   path_clear_pub_.publish(thing);
 }
 
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>537</width>
-    <height>754</height>
+    <width>575</width>
+    <height>831</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -444,13 +444,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="reset_map">
-       <property name="text">
-        <string>Reset Map</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="land_push_button">
        <property name="text">
         <string>Land</string>
@@ -540,6 +533,24 @@
       <widget class="QPushButton" name="perch">
        <property name="text">
         <string>Perch</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="0" colspan="5">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QPushButton" name="clear_path">
+       <property name="text">
+        <string>clear_path</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reset_map">
+       <property name="text">
+        <string>Reset Map</string>
        </property>
       </widget>
      </item>
