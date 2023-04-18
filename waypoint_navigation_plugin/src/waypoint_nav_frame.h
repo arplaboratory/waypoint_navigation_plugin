@@ -55,6 +55,7 @@
 #include "ui_WaypointNavigation.h"
 #include <visualization_msgs/MarkerArray.h>
 
+#include <std_msgs/Bool.h>
 
 typedef struct {
     int derivOrder, vertexNum;
@@ -129,6 +130,8 @@ public:
   std::vector<waypoint_ineq_const> ineq_list;
   void push_newIneq_const();
   void ineqChanged(double val,int mode, int axis);
+
+
 protected:
 
   Ui::WaypointNavigationWidget *ui_;
@@ -169,7 +172,10 @@ private Q_SLOTS:
   void hover_push_button();
   void clear_map();
 
-   //Bernstein Check boxes
+  //mavjoy interface
+  void mavjoyInterfaceChanged(const std_msgs::Bool& mavjoy_msg);
+
+  //Bernstein Check boxes
 
 
   //Inequality cahgned for each double box
@@ -194,6 +200,9 @@ private:
   ros::Subscriber path_listen_;
   ros::Subscriber vel_listen_;
   ros::Subscriber acc_listen_;
+
+  // mavjoy interface
+  ros::Subscriber mavjoy_interface_sub;
 
   void pos_listen(const nav_msgs::Path &msg);
   void vel_listen(const nav_msgs::Path &msg);
@@ -220,10 +229,14 @@ private:
   double roll_=0.0;
   double pitch_=0.0;
 
+   // mavjoy flag
+  bool mavjoyInterface = false;
+
   // The current name of the output topic.
   QString output_topic_;
   QString frame_id_;
 
+  
 
   // The current name of the output topic.
   std::string robot_name = "quadrotor";

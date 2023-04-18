@@ -17,48 +17,6 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="1" colspan="3">
-    <widget class="QPushButton" name="goto_push_button">
-     <property name="text">
-      <string>Go To</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="5">
-    <layout class="QHBoxLayout" name="horizontalLayout_7">
-     <item>
-      <widget class="QPushButton" name="motors_on_push_button">
-       <property name="text">
-        <string>Motors ON</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="hover">
-       <property name="text">
-        <string>Hover</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="motors_off_push_button">
-       <property name="styleSheet">
-        <string notr="true">color: rgb(255, 0, 0);</string>
-       </property>
-       <property name="text">
-        <string>Motors Off</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="13" column="0">
-    <widget class="QLabel" name="label_time">
-     <property name="text">
-      <string>TotalTime: </string>
-     </property>
-    </widget>
-   </item>
    <item row="8" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -143,126 +101,24 @@
      </item>
     </layout>
    </item>
-   <item row="10" column="2" colspan="3">
-    <widget class="QLineEdit" name="topic_line_edit">
+   <item row="20" column="0">
+    <widget class="QLabel" name="sel_label">
      <property name="text">
-      <string>/waypoints</string>
+      <string>Selected wp: </string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_6">
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_frame">
      <property name="text">
-      <string>Node</string>
+      <string>Frame</string>
      </property>
     </widget>
    </item>
-   <item row="17" column="4">
-    <widget class="QCheckBox" name="bern_enable">
-     <property name="text">
-      <string>Bernstein Traj</string>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="1">
+   <item row="11" column="1">
     <widget class="QCheckBox" name="topic_overide">
      <property name="text">
       <string>Topic Overide</string>
-     </property>
-    </widget>
-   </item>
-   <item row="15" column="0">
-    <widget class="QLabel" name="wp_height_label">
-     <property name="text">
-      <string>Default Height</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Robot </string>
-     </property>
-    </widget>
-   </item>
-   <item row="24" column="0" colspan="5">
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Expand X</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QSlider" name="z_size">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QSlider" name="y_size">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Expand Y</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="bern_ineq_en">
-       <property name="text">
-        <string>Corridor Plan</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Expand Z</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QSlider" name="x_size">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="label_topic">
-     <property name="text">
-      <string>Topic</string>
-     </property>
-    </widget>
-   </item>
-   <item row="19" column="2">
-    <widget class="QLabel" name="sel_wp_label">
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1" colspan="4">
-    <widget class="QLineEdit" name="node_name_line_edit">
-     <property name="text">
-      <string>mav_services</string>
-     </property>
-    </widget>
-   </item>
-   <item row="26" column="2" colspan="3">
-    <widget class="QPushButton" name="publish_wp_button">
-     <property name="text">
-      <string>Publish Waypoints</string>
      </property>
     </widget>
    </item>
@@ -282,31 +138,153 @@
      </property>
     </widget>
    </item>
-   <item row="13" column="4">
-    <widget class="QDoubleSpinBox" name="TimeBox"/>
+   <item row="20" column="4">
+    <widget class="QCheckBox" name="replan_enable">
+     <property name="text">
+      <string>Replan Enable</string>
+     </property>
+    </widget>
    </item>
-   <item row="27" column="2" colspan="3">
+   <item row="17" column="4">
+    <widget class="QCheckBox" name="display2D">
+     <property name="text">
+      <string>Display 2D Plots</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <widget class="QLabel" name="wp_height_label">
+     <property name="text">
+      <string>Default Height</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="4">
+    <widget class="QLineEdit" name="robot_name_line_edit">
+     <property name="inputMask">
+      <string/>
+     </property>
+     <property name="text">
+      <string>quadrotor</string>
+     </property>
+    </widget>
+   </item>
+   <item row="28" column="2" colspan="3">
     <widget class="QPushButton" name="load_wp_button">
      <property name="text">
       <string>Load Waypoints</string>
      </property>
     </widget>
    </item>
-   <item row="19" column="0">
-    <widget class="QLabel" name="sel_label">
+   <item row="14" column="0">
+    <widget class="QLabel" name="label_time">
      <property name="text">
-      <string>Selected wp: </string>
+      <string>TotalTime: </string>
      </property>
     </widget>
    </item>
-   <item row="11" column="2" colspan="3">
-    <widget class="QLineEdit" name="frame_line_edit">
+   <item row="26" column="0" colspan="5">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Roll (world)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="doubleSpinBox">
+       <property name="minimum">
+        <double>-1.570000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>1.570000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Pitch (world)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+       <property name="minimum">
+        <double>-1.570000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>1.570000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="perch">
+       <property name="text">
+        <string>Perch</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="28" column="0" colspan="2">
+    <widget class="QPushButton" name="save_wp_button">
      <property name="text">
-      <string>world</string>
+      <string>Save Waypoints</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="2">
+   <item row="27" column="0" colspan="2">
+    <widget class="QPushButton" name="clear_all_button">
+     <property name="text">
+      <string>Clear All</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="4">
+    <widget class="QLineEdit" name="node_name_line_edit">
+     <property name="text">
+      <string>mav_services</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="5">
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QPushButton" name="takeoff_push_button">
+       <property name="text">
+        <string>Take Off</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="go_home_button">
+       <property name="text">
+        <string>Go Home</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="reset_map">
+       <property name="text">
+        <string>Reset Map</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="land_push_button">
+       <property name="text">
+        <string>Land</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="10" column="2">
     <widget class="QLabel" name="label_7">
      <property name="maximumSize">
       <size>
@@ -319,24 +297,49 @@
      </property>
     </widget>
    </item>
-   <item row="15" column="4">
-    <widget class="QDoubleSpinBox" name="wp_height_doubleSpinBox">
-     <property name="minimum">
-      <double>-5.000000000000000</double>
-     </property>
-     <property name="singleStep">
-      <double>0.100000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="4">
-    <widget class="QCheckBox" name="display2D">
+   <item row="7" column="1" colspan="3">
+    <widget class="QPushButton" name="goto_push_button">
      <property name="text">
-      <string>Display 2D Plots</string>
+      <string>Go To</string>
      </property>
     </widget>
    </item>
-   <item row="21" column="0" colspan="5">
+   <item row="11" column="0">
+    <widget class="QLabel" name="label_topic">
+     <property name="text">
+      <string>Topic</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="2" colspan="3">
+    <widget class="QLineEdit" name="frame_line_edit">
+     <property name="text">
+      <string>world</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Node</string>
+     </property>
+    </widget>
+   </item>
+   <item row="27" column="2" colspan="3">
+    <widget class="QPushButton" name="publish_wp_button">
+     <property name="text">
+      <string>Publish Waypoints</string>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="4">
+    <widget class="QCheckBox" name="bern_enable">
+     <property name="text">
+      <string>Bernstein Traj</string>
+     </property>
+    </widget>
+   </item>
+   <item row="22" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="x_label">
@@ -420,126 +423,141 @@
      </item>
     </layout>
    </item>
-   <item row="11" column="0">
-    <widget class="QLabel" name="label_frame">
-     <property name="text">
-      <string>Frame</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="5">
-    <layout class="QHBoxLayout" name="horizontalLayout_8">
-     <item>
-      <widget class="QPushButton" name="takeoff_push_button">
-       <property name="text">
-        <string>Take Off</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="go_home_button">
-       <property name="text">
-        <string>Go Home</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="reset_map">
-       <property name="text">
-        <string>Reset Map</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="land_push_button">
-       <property name="text">
-        <string>Land</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="19" column="4">
-    <widget class="QCheckBox" name="replan_enable">
-     <property name="text">
-      <string>Replan Enable</string>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="0">
+   <item row="17" column="0">
     <widget class="QLabel" name="waypoint_count_label">
      <property name="text">
       <string>Total Waypoints: </string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="4">
-    <widget class="QLineEdit" name="robot_name_line_edit">
-     <property name="inputMask">
+   <item row="25" column="0" colspan="5">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Expand X</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QSlider" name="z_size">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QSlider" name="y_size">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Expand Y</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="bern_ineq_en">
+       <property name="text">
+        <string>Corridor Plan</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Expand Z</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSlider" name="x_size">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="20" column="2">
+    <widget class="QLabel" name="sel_wp_label">
+     <property name="text">
       <string/>
      </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>quadrotor</string>
+      <string>Robot </string>
      </property>
     </widget>
    </item>
-   <item row="26" column="0" colspan="2">
-    <widget class="QPushButton" name="clear_all_button">
-     <property name="text">
-      <string>Clear All</string>
+   <item row="14" column="4">
+    <widget class="QDoubleSpinBox" name="TimeBox"/>
+   </item>
+   <item row="16" column="4">
+    <widget class="QDoubleSpinBox" name="wp_height_doubleSpinBox">
+     <property name="minimum">
+      <double>-5.000000000000000</double>
+     </property>
+     <property name="singleStep">
+      <double>0.100000000000000</double>
      </property>
     </widget>
    </item>
-   <item row="27" column="0" colspan="2">
-    <widget class="QPushButton" name="save_wp_button">
+   <item row="11" column="2" colspan="3">
+    <widget class="QLineEdit" name="topic_line_edit">
      <property name="text">
-      <string>Save Waypoints</string>
+      <string>/waypoints</string>
      </property>
     </widget>
    </item>
-   <item row="25" column="0" colspan="5">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <item row="3" column="0" colspan="5">
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
-      <widget class="QLabel" name="label_11">
+      <widget class="QPushButton" name="motors_on_push_button">
        <property name="text">
-        <string>Roll (world)</string>
+        <string>Motors ON</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox">
-       <property name="minimum">
-        <double>-1.570000000000000</double>
-       </property>
-       <property name="maximum">
-        <double>1.570000000000000</double>
-       </property>
-       <property name="value">
-        <double>0.000000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_12">
+      <widget class="QPushButton" name="hover">
        <property name="text">
-        <string>Pitch (world)</string>
+        <string>Hover</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-       <property name="minimum">
-        <double>-1.570000000000000</double>
+      <widget class="QPushButton" name="motors_off_push_button">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 0, 0);</string>
        </property>
-       <property name="maximum">
-        <double>1.570000000000000</double>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="perch">
        <property name="text">
-        <string>Perch</string>
+        <string>Motors Off</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="9" column="0" colspan="5">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <property name="leftMargin">
+      <number>10</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="set_mavjoy_op_label">
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 0, 0);
+font: 16pt;</string>
+       </property>
+       <property name="text">
+        <string>Mavjoy Interface OFF &gt;&gt; Autonomous mode</string>
        </property>
       </widget>
      </item>

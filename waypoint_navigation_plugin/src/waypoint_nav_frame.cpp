@@ -50,6 +50,9 @@
 
 #include <QFileDialog>
 #include <boost/foreach.hpp>
+
+#include <std_msgs/Bool.h>
+
 #define foreach BOOST_FOREACH
 
 namespace waypoint_nav_plugin
@@ -68,7 +71,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   , wp_nav_tool_(wp_tool)
 {
   scene_manager_ = context_->getSceneManager();
-
+  int x=1;
   // set up the GUI
   ui_->setupUi(this);
 	pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
@@ -118,6 +121,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
 	path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
+
+  // mavjoy interface
+  mavjoy_interface_sub = nh_.subscribe("/mavjoy_interface", 10, &WaypointFrame::mavjoyInterfaceChanged, this);
 
 /*
   connect(ui_->bern_pl, SIGNAL(valueChanged(double)), this, SLOT(pl_ineqChanged(double)));
@@ -863,14 +869,23 @@ void WaypointFrame::motors_on_push_button(){
 	ros::ServiceClient client = nh_.serviceClient<std_srvs::SetBool>(srvs_name);
 	std_srvs::SetBool srv;
 	srv.request.data = true;
-	if (client.call(srv))
-	{
-		ROS_INFO("MOTORS STARTED");
-	}
-	else
-	{
-		ROS_ERROR("FAILED TO START MOTORS");
-	}	
+	
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("MOTORS STARTED");
+    }
+    else
+    {
+      ROS_ERROR("FAILED TO START MOTORS");
+    }	
+  }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }
+
 }
 
 void WaypointFrame::motors_off_push_button(){
@@ -879,14 +894,22 @@ void WaypointFrame::motors_off_push_button(){
 	ros::ServiceClient client = nh.serviceClient<std_srvs::SetBool>(srvs_name);
 	std_srvs::SetBool srv;
 	srv.request.data = false;
-	if (client.call(srv))
-	{
-		ROS_INFO("MOTORS STOPPED");
-	}
-	else
-	{
-		ROS_ERROR("FAILED TO STOP MOTORS");
-	}	
+	
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("MOTORS STOPPED");
+    }
+    else
+    {
+      ROS_ERROR("FAILED TO STOP MOTORS");
+    }
+  }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }	
 }
 
 void WaypointFrame::hover_push_button(){
@@ -895,14 +918,22 @@ void WaypointFrame::hover_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
 	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	std_srvs::Trigger srv;
-	if (client.call(srv))
-	{
-		ROS_INFO("Hover Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed Hover ");
-	}		
+  
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("Hover Success");
+    }
+    else
+    {	
+      ROS_ERROR("Failed Hover ");
+    }	
+  }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }	
 }
 
 void WaypointFrame::land_push_button(){
@@ -911,29 +942,46 @@ void WaypointFrame::land_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";
 	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	std_srvs::Trigger srv;
-	if (client.call(srv))
-	{
-		ROS_INFO("Land Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed Land ");
-	}		
+	
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("Land Success");
+    }
+    else
+    {	
+      ROS_ERROR("Failed Land ");
+    }	
+  }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }
 }
+
 void WaypointFrame::takeoff_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
 	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	std_srvs::Trigger srv;
-	if (client.call(srv))
-	{
-		ROS_INFO("Takeoff Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed takeoff ");
-	}		
+	
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("Takeoff Success");
+    }
+    else
+    {	
+      ROS_ERROR("Failed takeoff ");
+    }
+  }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }		
 }
 
 void WaypointFrame::goto_push_button(){
@@ -952,14 +1000,22 @@ void WaypointFrame::goto_push_button(){
  	srv.request.goal [1] = ui_->y_doubleSpinBox_gt->value();
   	srv.request.goal [2] = ui_->z_doubleSpinBox_gt->value();
   	srv.request.goal [3] = ui_->yaw_doubleSpinBox_gt->value();
-	if (client.call(srv))
-	{
-		ROS_INFO("GoTo Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed GoTo ");
-	}		
+	
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("GoTo Success");
+    }
+    else
+    {	
+      ROS_ERROR("Failed GoTo ");
+    }	
+  }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }
 
 }
 
@@ -970,6 +1026,26 @@ void WaypointFrame::relativeChanged(int b){
   }
   else{
 	 relative_ = false;
+  }
+}
+
+void WaypointFrame::mavjoyInterfaceChanged(const std_msgs::Bool& mavjoy_msg)
+{
+  
+
+  if(mavjoy_msg.data == 0)
+  {
+    std::string mavjoy_label = "Mavjoy Interface OFF >> Autonomous mode";
+    ui_->set_mavjoy_op_label->setStyleSheet("QLabel {color : red; font: 16pt; text-align: center}");
+    ui_->set_mavjoy_op_label->setText(QString::fromStdString(mavjoy_label));
+    mavjoyInterface = false;
+  }
+  else
+  {
+    std::string mavjoy_label = "Mavjoy Interface ON >> Manual Mode";
+    ui_->set_mavjoy_op_label->setStyleSheet("QLabel {color : green; font: 16pt}");
+    ui_->set_mavjoy_op_label->setText(QString::fromStdString(mavjoy_label));
+    mavjoyInterface = true;
   }
 }
 
@@ -1007,15 +1083,23 @@ void WaypointFrame::goHome_push_button(){
  	srv.request.goal [1] = 0;
   	srv.request.goal [2] = 0.5;
   	srv.request.goal [3] = 0;
-	if (client.call(srv))
-	{
-		ROS_INFO("Go Home Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed Go Home ");
-	}		
+  
+  if (!mavjoyInterface)
+  {
+    if (client.call(srv))
+    {
+      ROS_INFO("Go Home Success");
+    }
+    else
+    {	
+      ROS_ERROR("Failed Go Home ");
+    }
   }
+  else
+  {
+    ROS_ERROR("Robot in Manual mode. Use mavjoy to change in Autonomous mode");
+  }		
+}
 
 }//namespace
 
