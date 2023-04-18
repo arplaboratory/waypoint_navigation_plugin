@@ -25,23 +25,40 @@ if(rviz_QT_VERSION VERSION_LESS "5")
 
   # Header files that need Qt Moc pre-processing for use with Qt signals, etc:
   qt4_wrap_cpp(MOC_FILES
+
+    src/hri_nav_frame.h
+    src/hri_nav_tool.h
     src/waypoint_nav_frame.h
     src/waypoint_nav_tool.h
   )
 
   # Convert the Qt Signals and Slots for QWidget events
-  qt4_wrap_ui(UIC_FILES
+
+   qt4_wrap_ui(UIC_FILES
+    ui/HRI_coworker.ui
+  )
+  
+ qt4_wrap_ui(UIC_FILES
     ui/WaypointNavigation.ui
   )
 else()
   # Header files that need Qt Moc pre-processing for use with Qt signals, etc:
   qt5_wrap_cpp(MOC_FILES
+
+
+    src/hri_nav_frame.h
+    src/hri_nav_tool.h
     src/waypoint_nav_frame.h
     src/waypoint_nav_tool.h
   )
 
   # Convert the Qt Signals and Slots for QWidget events
-  qt5_wrap_ui(UIC_FILES
+
+     qt5_wrap_ui(UIC_FILES
+    ui/HRI_coworker.ui
+  )
+  
+    qt5_wrap_ui(UIC_FILES
     ui/WaypointNavigation.ui
   )
 endif()
@@ -50,7 +67,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Plugin Source
 set(SOURCE_FILES
-  src/waypoint_nav_frame.cpp
+
+  src/hri_nav_frame.cpp
+  src/hri_nav_tool.cpp
+   src/waypoint_nav_frame.cpp
   src/waypoint_nav_tool.cpp
   ${MOC_FILES}
 )
@@ -59,6 +79,7 @@ set(LIB_NAME waypoint_nav_plugin)
 add_library(${LIB_NAME} ${SOURCE_FILES} ${MOC_SOURCES} ${UIC_FILES})
 target_link_libraries(${LIB_NAME}
   ${catkin_LIBRARIES} ${QT_LIBRARIES})
+
 
 ## Install rules
 
@@ -74,7 +95,7 @@ install(TARGETS ${LIB_NAME}
 install(FILES
   #plugin_description.xml
   #camera_plugin_description.xml
-  waypoint_nav_plugin_description.xml
+  hri_nav_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(DIRECTORY media/

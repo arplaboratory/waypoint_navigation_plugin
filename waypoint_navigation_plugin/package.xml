@@ -18,6 +18,6 @@
 
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
-    <rviz plugin="${prefix}/waypoint_nav_plugin_description.xml"/>
+    <rviz plugin="${prefix}/hri_nav_plugin_description.xml"/>
   </export>
 </package>
