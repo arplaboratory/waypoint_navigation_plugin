@@ -222,7 +222,7 @@ private:
   double default_height_;
   double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
   bool display_2D = false; // Jeff additional boolean 
-  bool relative_ = true;
+  bool relative_ = false;
   bool bern_enable_ = false;
   bool replan_enable_ = false;
   bool topicOverride = false;
