@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>575</width>
+    <width>659</width>
     <height>831</height>
    </rect>
   </property>
@@ -161,6 +161,9 @@
     <widget class="QCheckBox" name="bern_enable">
      <property name="text">
       <string>Bernstein Traj</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

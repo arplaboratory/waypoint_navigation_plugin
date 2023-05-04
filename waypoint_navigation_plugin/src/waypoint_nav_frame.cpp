@@ -40,8 +40,10 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
-
+#include <mavros_msgs/CommandBool.h>
 #include "waypoint_nav_tool.h"
+#include <mavros_msgs/SetMode.h>
+#include <mavros_msgs/State.h>
 
 //#include "waypoint_nav_frame.h"
 //#include "waypoint_nav_frame.h"
@@ -70,6 +72,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   scene_manager_ = context_->getSceneManager();
 
   // set up the GUI
+  ROS_INFO("SET UP WAYPOINT FRAME ");
   ui_->setupUi(this);
   pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
   wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
@@ -170,6 +173,7 @@ void WaypointFrame::bern_enable(int b)
   else{
 	  bern_enable_ = false;
   }
+  nh_.setParam("/"+ robot_name+"/"+"bern_enable",bern_enable_);
 
 }
 
@@ -378,7 +382,7 @@ void WaypointFrame::publishButtonClicked()
   path.header.frame_id = frame_id_.toStdString();
   nh_.setParam("/total_time", getTime());
   nh_.setParam("/display_2D", get2Ddisplay());
-  nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
+  //nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
 
 
   wp_pub_.publish(path);
@@ -463,10 +467,12 @@ void WaypointFrame::bool2DChanged(int b)
   else{
 	 display_2D = false;
   }
+
 }
 
 void WaypointFrame::replan_enable(int b)
 {
+  ROS_INFO("REPLAN %d", b);
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   ros::NodeHandle nh;
   if (b ==2){
@@ -867,11 +873,22 @@ void WaypointFrame::clear_map(){
 void WaypointFrame::motors_on_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
 	ros::ServiceClient client = nh_.serviceClient<std_srvs::SetBool>(srvs_name);
+	std::string srvs_name2 = "/"+ robot_name+"/mavros/cmd/arming";
+	ros::ServiceClient mav_client = nh_.serviceClient<mavros_msgs::CommandBool>(srvs_name2);
+  mavros_msgs::CommandBool srv_mavros;
+  srv_mavros.request.value = true;
 	std_srvs::SetBool srv;
 	srv.request.data = true;
 	if (client.call(srv))
 	{
-		ROS_INFO("MOTORS STARTED");
+    if(mav_client.call(srv_mavros)){
+		  ROS_INFO("MOTORS STARTED");
+    }
+    else{
+      ROS_INFO("FAILED ARMING");
+      srv.request.data = false;
+      client.call(srv);
+    }
 	}
 	else
 	{
@@ -884,11 +901,17 @@ void WaypointFrame::motors_off_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
 	ros::ServiceClient client = nh.serviceClient<std_srvs::SetBool>(srvs_name);
 	std_srvs::SetBool srv;
+	std::string srvs_name2 = "/"+ robot_name+"/mavros/cmd/arming";
+	ros::ServiceClient mav_client = nh_.serviceClient<mavros_msgs::CommandBool>(srvs_name2);
+  mavros_msgs::CommandBool srv_mavros;
+  srv_mavros.request.value = false;
 	srv.request.data = false;
-	if (client.call(srv))
-	{
-		ROS_INFO("MOTORS STOPPED");
-	}
+  if(mav_client.call(srv_mavros)){
+	  if (client.call(srv))
+	  {
+		  ROS_INFO("MOTORS STOPPED");
+	  }
+  }
 	else
 	{
 		ROS_ERROR("FAILED TO STOP MOTORS");
@@ -931,10 +954,16 @@ void WaypointFrame::takeoff_push_button(){
 	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
 	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
+	std::string srvs_name2 = "/"+ robot_name+"/mavros/set_mode";
+  ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>(srvs_name2);
 	std_srvs::Trigger srv;
 	if (client.call(srv))
-	{
-		ROS_INFO("Takeoff Success");
+	{ 
+    mavros_msgs::SetMode offb_set_mode;
+    offb_set_mode.request.custom_mode = "OFFBOARD";
+    if(set_mode_client.call(offb_set_mode)){
+		  ROS_INFO("Takeoff Success");
+    }
 	}
 	else
 	{	

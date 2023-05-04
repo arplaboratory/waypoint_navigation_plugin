@@ -15,6 +15,7 @@
   <depend>mav_manager</depend>
   <depend>rosbag</depend>
   <depend>std_srvs</depend>
+  <depend>mavros_msgs</depend>
 
   <export>
     <rosdoc config="${prefix}/rosdoc.yaml"/>
