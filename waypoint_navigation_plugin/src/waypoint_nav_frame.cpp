@@ -96,7 +96,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   //ROSRUN RQT Mav Manager Line topics 
   connect(ui_->robot_name_line_edit, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
   connect(ui_->node_name_line_edit, SIGNAL(editingFinished()), this, SLOT(serviceChanged()));
-  connect(ui_->robot_name_line_edit_2, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
+  connect(ui_->robot_name_line_edit_2, SIGNAL(editingFinished()), this, SLOT(robotChanged2()));
   connect(ui_->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
   
   //Buttons
@@ -1009,30 +1009,31 @@ void WaypointFrame::relativeChanged(int b){
 
 void WaypointFrame::robotChanged(){ 
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  ROS_INFO("tab %d",ui_->tabWidget->currentIndex());
-   ROS_INFO("tab");
   QString new_frame = ui_->robot_name_line_edit->text();
+  tab1_robot= new_frame.toStdString();
   robot_name =  new_frame.toStdString();
   // ROS_INFO( robot_name);
   path_listen_.shutdown();
   vel_listen_.shutdown();
   acc_listen_.shutdown();
-    if(ui_->tabWidget->currentIndex()==0){
-
-        tab1_robot= robot_name;
-
-    }
-    if(ui_->tabWidget->currentIndex()==1){
-
-        tab2_robot = robot_name ;
-
-    }
 	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
+}
 
-
-
+void WaypointFrame::robotChanged2(){ 
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  QString new_frame = ui_->robot_name_line_edit_2->text();
+  tab2_robot = new_frame.toStdString();
+  // ROS_INFO( robot_name);
+  robot_name =  new_frame.toStdString();
+  // ROS_INFO( robot_name);
+  path_listen_.shutdown();
+  vel_listen_.shutdown();
+  acc_listen_.shutdown();
+	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
+	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
+	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
 }
 
 void WaypointFrame::serviceChanged(){

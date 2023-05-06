@@ -149,7 +149,7 @@ private Q_SLOTS:
   void topicChanged();
   void poseChanged(double val);
   void tabSelected();
-
+  void robotChanged2();
   //void rollChanged(double val);
   //void pitchChanged(double val);
 
