@@ -96,6 +96,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   //ROSRUN RQT Mav Manager Line topics 
   connect(ui_->robot_name_line_edit, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
   connect(ui_->node_name_line_edit, SIGNAL(editingFinished()), this, SLOT(serviceChanged()));
+  connect(ui_->robot_name_line_edit_2, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
+  connect(ui_->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected()));
+  
   //Buttons
   connect(ui_->motors_on_push_button, SIGNAL(clicked()), this, SLOT(motors_on_push_button()));
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
@@ -110,7 +113,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
-  
+
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
 
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
@@ -135,6 +138,30 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
 */
 
 }
+
+void WaypointFrame::tabSelected()
+{
+    if(ui_->tabWidget->currentIndex()==0){
+
+        robot_name = tab1_robot;
+
+    }
+    if(ui_->tabWidget->currentIndex()==1){
+
+        robot_name = tab2_robot;
+
+    }
+
+  path_listen_.shutdown();
+  vel_listen_.shutdown();
+  acc_listen_.shutdown();
+
+	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
+	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
+	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
+}
+
+
 
 WaypointFrame::~WaypointFrame()
 {
@@ -982,12 +1009,24 @@ void WaypointFrame::relativeChanged(int b){
 
 void WaypointFrame::robotChanged(){ 
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  ROS_INFO("tab %d",ui_->tabWidget->currentIndex());
+   ROS_INFO("tab");
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
+  // ROS_INFO( robot_name);
   path_listen_.shutdown();
   vel_listen_.shutdown();
   acc_listen_.shutdown();
+    if(ui_->tabWidget->currentIndex()==0){
 
+        tab1_robot= robot_name;
+
+    }
+    if(ui_->tabWidget->currentIndex()==1){
+
+        tab2_robot = robot_name ;
+
+    }
 	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
@@ -1000,6 +1039,7 @@ void WaypointFrame::serviceChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->node_name_line_edit->text();
   mav_node_name =  new_frame.toStdString();
+
 }
 
 void WaypointFrame::goHome_push_button(){

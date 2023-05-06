@@ -148,7 +148,7 @@ private Q_SLOTS:
   void frameChanged();
   void topicChanged();
   void poseChanged(double val);
-
+  void tabSelected();
 
   //void rollChanged(double val);
   //void pitchChanged(double val);
@@ -230,7 +230,9 @@ private:
   // The current name of the output topic.
   std::string robot_name = "quadrotor";
   std::string mav_node_name = "mav_services";
-
+  std::string tab1_robot = "tab1";
+  int tab_val = 0;
+  std::string tab2_robot = "tab2";
   //mutex for changes of variables
   boost::mutex frame_updates_mutex_;
   visualization_msgs::MarkerArray marker_array;
