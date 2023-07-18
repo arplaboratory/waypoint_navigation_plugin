@@ -7,6 +7,9 @@ Install
 
 ```
 sudo apt-get install gnuplot
+cd /path/to/catkin_directory/
+catkin build waypoint_navigation_plugin
+source /path/to/catkin_directory/devel/setup.bash
 ```
 
 Waypoint navigation contains a GUI dependent on ARPL_msgs. quadrotor_path contains a buffer for msgs of a certain odometry for visualization.
