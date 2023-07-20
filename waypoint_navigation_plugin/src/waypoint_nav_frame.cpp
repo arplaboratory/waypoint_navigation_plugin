@@ -879,21 +879,8 @@ void WaypointFrame::motors_on_push_button(){
   srv_mavros.request.value = true;
 	std_srvs::SetBool srv;
 	srv.request.data = true;
-	if (client.call(srv))
-	{
-    if(mav_client.call(srv_mavros)){
-		  ROS_INFO("MOTORS STARTED");
-    }
-    else{
-      ROS_INFO("FAILED ARMING");
-      srv.request.data = false;
-      client.call(srv);
-    }
-	}
-	else
-	{
-		ROS_ERROR("FAILED TO START MOTORS");
-	}	
+	client.call(srv);
+  mav_client.call(srv_mavros);
 }
 
 void WaypointFrame::motors_off_push_button(){
@@ -906,16 +893,8 @@ void WaypointFrame::motors_off_push_button(){
   mavros_msgs::CommandBool srv_mavros;
   srv_mavros.request.value = false;
 	srv.request.data = false;
-  if(mav_client.call(srv_mavros)){
-	  if (client.call(srv))
-	  {
-		  ROS_INFO("MOTORS STOPPED");
-	  }
-  }
-	else
-	{
-		ROS_ERROR("FAILED TO STOP MOTORS");
-	}	
+  mav_client.call(srv_mavros);
+	client.call(srv);
 }
 
 void WaypointFrame::hover_push_button(){
