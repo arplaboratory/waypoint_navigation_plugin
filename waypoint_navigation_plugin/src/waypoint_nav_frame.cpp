@@ -1001,7 +1001,7 @@ void WaypointFrame::robotChanged(){
   path_listen_.shutdown();
   vel_listen_.shutdown();
   acc_listen_.shutdown();
-
+	  nh_.setParam("/"+robot_name+"/l1_act",l1_act_);
 	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
