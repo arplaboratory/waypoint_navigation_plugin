@@ -110,11 +110,12 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
-  
+  connect(ui_->l1_box, SIGNAL(stateChanged(int)), this, SLOT(l1Changed(int)));
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
 
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
   nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
+  nh_.setParam("/"+ robot_name+"/"+"l1_act",false);
 	path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
@@ -976,6 +977,19 @@ void WaypointFrame::relativeChanged(int b){
   }
   else{
 	 relative_ = false;
+  }
+}
+
+
+void WaypointFrame::l1Changed(int b){
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  if (b ==2){
+	  l1_act_ = true;
+	  nh_.setParam("/"+robot_name+"/l1_act",l1_act_);
+  }
+  else{
+	 l1_act_ = false;	
+	 nh_.setParam("/"+robot_name+"/l1_act",l1_act_);
   }
 }
 

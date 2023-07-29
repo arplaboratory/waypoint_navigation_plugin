@@ -164,6 +164,7 @@ private Q_SLOTS:
   void takeoff_push_button();
   void goto_push_button();
   void relativeChanged(int b);
+  void l1Changed(int b);
   void robotChanged();
   void serviceChanged();
   void goHome_push_button();
@@ -219,6 +220,8 @@ private:
   bool bern_enable_ = false;
   bool replan_enable_ = false;
   bool topicOverride = false;
+  bool l1_act_ = false;
+  
   double roll_=0.0;
   double pitch_=0.0;
 

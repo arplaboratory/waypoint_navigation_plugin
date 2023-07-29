@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>575</width>
+    <width>659</width>
     <height>831</height>
    </rect>
   </property>
@@ -555,6 +555,13 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="l1_box">
+     <property name="text">
+      <string>l1_activate</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
