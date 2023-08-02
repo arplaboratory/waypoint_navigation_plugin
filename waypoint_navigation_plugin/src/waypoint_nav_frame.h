@@ -169,6 +169,7 @@ private Q_SLOTS:
   void serviceChanged();
   void goHome_push_button();
   void hover_push_button();
+  void slider_change(int b);
   void clear_map();
   void clear_path();
    //Bernstein Check boxes
@@ -224,7 +225,7 @@ private:
   
   double roll_=0.0;
   double pitch_=0.0;
-
+  int fault_flag_ = 0;
   // The current name of the output topic.
   QString output_topic_;
   QString frame_id_;

@@ -112,10 +112,13 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
   connect(ui_->l1_box, SIGNAL(stateChanged(int)), this, SLOT(l1Changed(int)));
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
+  connect(ui_->fault_slider, SIGNAL(valueChanged(int)), this, SLOT(slider_change(int)));
 
   nh_.setParam("/"+ robot_name+"/"+"replan",false);
   nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
   nh_.setParam("/"+ robot_name+"/"+"l1_act",false);
+  fault_flag_=0;
+  nh_.setParam("/"+robot_name+"/fault_flag",fault_flag_);
 	path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
@@ -159,6 +162,12 @@ void WaypointFrame::clear_path()
 {
    std_msgs::Bool thing;
    path_clear_pub_.publish(thing);
+}
+
+void WaypointFrame::slider_change(int b){
+  fault_flag_ = b;
+  nh_.setParam("/"+robot_name+"/fault_flag",fault_flag_);
+
 }
 
 
@@ -1001,7 +1010,8 @@ void WaypointFrame::robotChanged(){
   path_listen_.shutdown();
   vel_listen_.shutdown();
   acc_listen_.shutdown();
-	  nh_.setParam("/"+robot_name+"/l1_act",l1_act_);
+	nh_.setParam("/"+robot_name+"/l1_act",l1_act_);
+  nh_.setParam("/"+robot_name+"/fault_flag",fault_flag_);
 	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
