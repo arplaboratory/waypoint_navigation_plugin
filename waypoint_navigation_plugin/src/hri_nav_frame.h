@@ -143,6 +143,7 @@ private Q_SLOTS:
   void start_FPVI_task();
   void start_APVI_task();
   void exit_task();
+  void rotate_180_yaw();
    //Bernstein Check boxes
 
 
@@ -167,6 +168,7 @@ private:
   ros::Publisher rqt_change_mode;
   ros::Publisher rqt_input_start_FPVI_task;
   ros::Publisher rqt_input_start_APVI_task;
+  ros::Publisher rqt_input_rotate_180_yaw;
 
 
 

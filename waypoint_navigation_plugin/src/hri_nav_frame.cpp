@@ -72,6 +72,7 @@ HriFrame::HriFrame(rviz::DisplayContext *context, std::map<int, Ogre::SceneNode*
   rqt_change_mode = nh_.advertise<std_msgs::Int32>("/rqt_input/case_switcher", 1);
   rqt_input_start_FPVI_task = nh_.advertise<std_msgs::Bool>("/rqt_input/start_FPVI_task", 1);
   rqt_input_start_APVI_task = nh_.advertise<std_msgs::Bool>("/rqt_input/start_APVI_task", 1);
+  rqt_input_rotate_180_yaw = nh_.advertise<std_msgs::Bool>("/rqt_input/rotate_180_yaw", 1);
   //connect the Qt signals and slots
   
 
@@ -96,7 +97,7 @@ HriFrame::HriFrame(rviz::DisplayContext *context, std::map<int, Ogre::SceneNode*
   connect(ui_->start_FPVI_task_button, SIGNAL(clicked()), this, SLOT(start_FPVI_task()));
   connect(ui_->start_APVI_task_button, SIGNAL(clicked()), this, SLOT(start_APVI_task()));
   connect(ui_->exit_task_button, SIGNAL(clicked()), this, SLOT(exit_task()));
-
+  connect(ui_->rotate180, SIGNAL(clicked()), this, SLOT(rotate_180_yaw()));
 /*
   connect(ui_->bern_pl, SIGNAL(valueChanged(double)), this, SLOT(pl_ineqChanged(double)));
   connect(ui_->bern_xl, SIGNAL(valueChanged(double)), this, SLOT(xl_ineqChanged(double)));
@@ -199,6 +200,18 @@ void HriFrame::exit_task(){
         sleep(0.01);
     }
 }
+
+void HriFrame::rotate_180_yaw(){
+    bool mode = true;
+	std_msgs::Bool mode_;
+    mode_.data = mode;
+    for (int i = 0; i < 100; i++)
+    {
+        rqt_input_rotate_180_yaw.publish(mode_);
+        sleep(0.01);
+    }
+}
+
 
 
   //Buttons RQT MAV MANAGER

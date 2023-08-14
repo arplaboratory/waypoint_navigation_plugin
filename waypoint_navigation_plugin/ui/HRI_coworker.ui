@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1092</width>
+    <width>2068</width>
     <height>1042</height>
    </rect>
   </property>
@@ -17,17 +17,29 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="9" column="4">
-    <widget class="QPushButton" name="exit_task_button">
+   <item row="7" column="4">
+    <widget class="QCheckBox" name="relative_checkbox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="tabletTracking">
+      <bool>false</bool>
+     </property>
      <property name="text">
-      <string>Exit Task</string>
+      <string>Relative</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="7" column="1" colspan="3">
-    <widget class="QPushButton" name="goto_push_button">
+   <item row="10" column="4">
+    <widget class="QPushButton" name="exit_task_button">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 0, 0);</string>
+     </property>
      <property name="text">
-      <string>Go To</string>
+      <string>Exit Task</string>
      </property>
     </widget>
    </item>
@@ -157,7 +169,7 @@
      </property>
     </widget>
    </item>
-   <item row="13" column="2">
+   <item row="14" column="2">
     <widget class="QLabel" name="sel_wp_label">
      <property name="text">
       <string/>
@@ -168,22 +180,6 @@
     <widget class="QLineEdit" name="node_name_line_edit">
      <property name="text">
       <string>mav_services</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="4">
-    <widget class="QCheckBox" name="relative_checkbox">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="tabletTracking">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Relative</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -240,24 +236,44 @@
      </item>
     </layout>
    </item>
-   <item row="9" column="0">
+   <item row="10" column="0">
     <widget class="QPushButton" name="take_control_button">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 215, 0);</string>
+     </property>
      <property name="text">
       <string>Take Control</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="3">
+   <item row="10" column="3">
     <widget class="QPushButton" name="start_APVI_task_button">
      <property name="text">
       <string>Start APVI Task</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="10" column="1">
     <widget class="QPushButton" name="start_FPVI_task_button">
      <property name="text">
       <string>Sart FPVI Task</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2" colspan="2">
+    <widget class="QPushButton" name="goto_push_button">
+     <property name="text">
+      <string>Go To</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <widget class="QPushButton" name="rotate180">
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 215, 0);</string>
+     </property>
+     <property name="text">
+      <string>Rotate 180</string>
      </property>
     </widget>
    </item>
