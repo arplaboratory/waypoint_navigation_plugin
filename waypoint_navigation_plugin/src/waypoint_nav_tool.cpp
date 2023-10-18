@@ -33,7 +33,7 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
 
-#include <ros/console.h>
+#include <rcutils/logging_macros.h>
 
 #include <rviz/viewport_mouse_event.h>
 #include <rviz/visualization_manager.h>
@@ -44,7 +44,7 @@
 #include <rviz/validate_floats.h>
 #include <rviz/panel_dock_widget.h>
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "waypoint_nav_tool.h"
 
@@ -79,7 +79,7 @@ void WaypointNavTool::onInitialize()
 
   if(rviz::loadMeshFromResource(flag_resource_).isNull())
   {
-    ROS_ERROR("WaypointNavTool: failed to load model resource '%s'.", flag_resource_.c_str());
+    //ROS_ERROR("WaypointNavTool: failed to load model resource '%s'.", flag_resource_.c_str());
     return;
   }
 
@@ -217,7 +217,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 
     if(rviz::loadMeshFromResource(flag_resource_).isNull())
     {
-      ROS_ERROR("WaypointNavTool: failed to load model resource '%s'.", flag_resource_.c_str());
+     // ROS_ERROR("WaypointNavTool: failed to load model resource '%s'.", flag_resource_.c_str());
       return;
     }
 
@@ -234,13 +234,13 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     if (sn_entry == sn_map_.end())
       sn_map_.insert(std::make_pair(unique_ind_, sn_ptr));
     else{
-      ROS_WARN("%s already in map", wp_name_str.c_str());
+    //  ROS_WARN("%s already in map", wp_name_str.c_str());
       return;
     }
 
     int num_wp = sn_map_.size();
 
-    geometry_msgs::PoseStamped pos;
+    geometry_msgs::msg::PoseStamped pos;
     pos.pose.position.x = position.x;
     pos.pose.position.y = position.y;
     pos.pose.position.z = position.z;
@@ -252,7 +252,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     frame_->setWpCount(num_wp);
 
     visualization_msgs::InteractiveMarker int_marker;
-    int_marker.header.stamp = ros::Time::now();
+    //int_marker.header.stamp = ros::Time::now();
     int_marker.header.frame_id = frame_->getFrameId().toStdString();
 
     int_marker.pose = pos.pose;
@@ -319,7 +319,7 @@ void WaypointNavTool::processFeedback(
      M_StringToSNPtr::iterator sn_entry =
         sn_map_.find(std::stoi(feedback->marker_name.substr(8)));
       if (sn_entry == sn_map_.end())
-        ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
+       // ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
       else
       {
 
@@ -348,7 +348,7 @@ void WaypointNavTool::processFeedback(
 
           frame_->getPose(position, quat);
 
-          geometry_msgs::Pose pos;
+          geometry_msgs::msg::Pose pos;
           pos.position.x = position.x;
           pos.position.y = position.y;
           pos.position.z = position.z;
@@ -374,10 +374,10 @@ void WaypointNavTool::processFeedback(
       M_StringToSNPtr::iterator sn_entry = sn_map_.find(std::stoi(feedback->marker_name.substr(8)));
 
       if (sn_entry == sn_map_.end())
-        ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
+        //ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
       else
       {
-        geometry_msgs::PoseStamped pos;
+        geometry_msgs::msg::PoseStamped pos;
         pos.pose = feedback->pose;
 
         Ogre::Vector3 position;
@@ -418,7 +418,7 @@ void WaypointNavTool::getMarkerPoses()
     std::string wp_name_str(wp_name.str());
     server_.get(wp_name_str, int_marker);
 
-    ROS_ERROR("pos: %g %g %g", int_marker.pose.position.x,
+    //ROS_ERROR("pos: %g %g %g", int_marker.pose.position.x,
     int_marker.pose.position.y,
     int_marker.pose.position.z);
   }

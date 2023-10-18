@@ -37,7 +37,7 @@
 
 #include <OGRE/OgreSceneManager.h>
 #include <rviz/display_context.h>
-#include <interactive_markers/interactive_marker_server.h>
+#include <interactive_markers/msg/interactive_marker_server.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 
@@ -45,8 +45,6 @@
 
 //#include "waypoint_nav_frame.h"
 //#include "waypoint_nav_frame.h"
-
-#include <tf/tf.h>
 
 #include <QFileDialog>
 #include <boost/foreach.hpp>
@@ -70,10 +68,11 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   scene_manager_ = context_->getSceneManager();
 
   // set up the GUI
+  node = rclcpp::Node::make_shared("wp_node");
   ui_->setupUi(this);
-  pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
-  wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
-  path_clear_pub_ = nh_.advertise<std_msgs::Bool>("/clear", 1);
+  pub_corridor_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("corridors", 1); 
+  wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("waypoints", 1);
+  path_clear_pub_ = node->create_publisher<std_msgs::msg::Bool>("/clear", 1);
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
   connect(ui_->topic_line_edit, SIGNAL(editingFinished()), this, SLOT(topicChanged()));
@@ -112,28 +111,12 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
   
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
-
-  nh_.setParam("/"+ robot_name+"/"+"replan",false);
-  nh_.setParam("/"+ robot_name+"/"+"bern_enable",false);
-	path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
-	vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
-	acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
-
-/*
-  connect(ui_->bern_pl, SIGNAL(valueChanged(double)), this, SLOT(pl_ineqChanged(double)));
-  connect(ui_->bern_xl, SIGNAL(valueChanged(double)), this, SLOT(xl_ineqChanged(double)));
-  connect(ui_->bern_yl, SIGNAL(valueChanged(double)), this, SLOT(yl_ineqChanged(double)));
-  connect(ui_->bern_zl, SIGNAL(valueChanged(double)), this, SLOT(zl_ineqChanged(double)));
-
-  connect(ui_->bern_pu, SIGNAL(valueChanged(double)), this, SLOT(pu_ineqChanged(double)));
-  connect(ui_->bern_xu, SIGNAL(valueChanged(double)), this, SLOT(xu_ineqChanged(double)));
-  connect(ui_->bern_yu, SIGNAL(valueChanged(double)), this, SLOT(yu_ineqChanged(double)));
-  connect(ui_->bern_zu, SIGNAL(valueChanged(double)), this, SLOT(zu_ineqChanged(double)));
-
-  connect(ui_->ineq_enable, SIGNAL(valueChanged(double)), this, SLOT(en_ineqChanged(double)));
-  connect(ui_->deriv_order, SIGNAL(valueChanged(double)), this, SLOT(do_ineqChanged(double)));
-*/
-
+  
+  rclcpp::Node::declare_parameter("/"+ robot_name+"/"+"replan",false);
+  rclcpp::Node::declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
+	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
+	//vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
+	//acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
 }
 
 WaypointFrame::~WaypointFrame()
@@ -156,8 +139,8 @@ void WaypointFrame::disable()
 
 void WaypointFrame::clear_path()
 {
-   std_msgs::Bool thing;
-   path_clear_pub_.publish(thing);
+   std_msgs::msg::Bool thing;
+   path_clear_pub_->publish(thing);
 }
 
 
@@ -179,13 +162,14 @@ void WaypointFrame::saveButtonClicked()
 
   QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*.bag)"));
 
-  if(filename == "")
+ /* if(filename == "")
     ROS_ERROR("No filename selected");
   else
   {
     QFileInfo info(filename);
     std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".bag";
-    ROS_INFO("saving waypoints to %s", filn.c_str());
+    std::cout << "saving waypoints to " << filn.c_str() <<std::endl;
+    //ROS_INFO("saving waypoints to %s", filn.c_str());
 
     rosbag::Bag bag;
     try{
@@ -193,11 +177,12 @@ void WaypointFrame::saveButtonClicked()
     }
     catch(rosbag::BagIOException e)
     {
-      ROS_ERROR("could not open bag %s", filn.c_str());
+      std::cout << "could not open bag " << filn.c_str() <<std::endl;
+      //ROS_ERROR("could not open bag %s", filn.c_str());
       return;
     }
 
-    nav_msgs::Path path;
+    nav_msgs::msg::Path path;
 
     std::map<int, Ogre::SceneNode* >::iterator sn_it;
     for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
@@ -205,7 +190,7 @@ void WaypointFrame::saveButtonClicked()
       Ogre::Vector3 position;
       position = sn_it->second->getPosition();
 
-      geometry_msgs::PoseStamped pos;
+      geometry_msgs::msg::PoseStamped pos;
       pos.pose.position.x = position.x;
       pos.pose.position.y = position.y;
       pos.pose.position.z = position.z;
@@ -224,13 +209,13 @@ void WaypointFrame::saveButtonClicked()
 
     bag.write("waypoints", ros::Time::now(), path);
     bag.close();
-  }
+  }*/
 }
 
 void WaypointFrame::loadButtonClicked()
 {
   QString filename = QFileDialog::getOpenFileName(0,tr("Open Bag"), "~/", tr("Bag Files (*.bag)"));
-
+  /*
   if(filename == "")
     ROS_ERROR("No filename selected");
   else
@@ -280,14 +265,14 @@ void WaypointFrame::loadButtonClicked()
         }
       }
     }
-  }
+  }*/
 }
 
 
 void WaypointFrame::push_newIneq_const(){
   //inequality helper function
   waypoint_ineq_const ineq_const;
-	ineq_const.derivOrder = 0;
+  ineq_const.derivOrder = 0;
   Eigen::Vector4d lower, upper;
   lower << 0.0, 0.0, 0.0, 0;
   upper << 0.0, 0.0, 0.0, 0;
@@ -316,7 +301,8 @@ void WaypointFrame::setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, boo
   ui_->ineq_enable->blockSignals(true);
 
 
-
+#include <chrono>
+#include <thread>
   ui_->bern_xl->setValue(lower[0]);
   ui_->bern_yl->setValue(lower[1]);
   ui_->bern_zl->setValue(lower[2]);
@@ -351,8 +337,8 @@ void WaypointFrame::publishButtonClicked()
     /*if(getBernEnable()){
       topic_name = "/b_waypoints";
     }*/
-    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
-    ros::Duration(0.30).sleep();
+    wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
+    //std::this_thread::sleep_for(std::chrono::milliseconds(300));
   }
   
   for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
@@ -360,7 +346,7 @@ void WaypointFrame::publishButtonClicked()
     Ogre::Vector3 position;
     position = sn_it->second->getPosition();
 
-    geometry_msgs::PoseStamped pos;
+    geometry_msgs::msg::PoseStamped pos;
     pos.pose.position.x = position.x;
     pos.pose.position.y = position.y;
     pos.pose.position.z = position.z;
@@ -376,12 +362,10 @@ void WaypointFrame::publishButtonClicked()
   }
 
   path.header.frame_id = frame_id_.toStdString();
-  nh_.setParam("/total_time", getTime());
-  nh_.setParam("/display_2D", get2Ddisplay());
-  nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
-
-
-  wp_pub_.publish(path);
+  //nh_.setParam("/total_time", getTime());
+  //nh_.setParam("/display_2D", get2Ddisplay());
+  //nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
+  wp_pub_->publish(path);
 }
 
 
@@ -394,7 +378,7 @@ void WaypointFrame::perchClicked()
     Ogre::Vector3 position;
     position = sn_it->second->getPosition();
 
-    geometry_msgs::PoseStamped pos;
+    geometry_msgs::msg::PoseStamped pos;
     pos.pose.position.x = position.x;
     pos.pose.position.y = position.y;
     pos.pose.position.z = position.z;
@@ -410,16 +394,16 @@ void WaypointFrame::perchClicked()
   }
 
   path.header.frame_id = frame_id_.toStdString();
-  nh_.setParam("/total_time", getTime());
-  nh_.setParam("/display_2D", get2Ddisplay());
+  //nh_.setParam("/total_time", getTime());
+  //nh_.setParam("/display_2D", get2Ddisplay());
   if(!getTopicOveride()){
     std::string topic_name = "/perch";
     if(getBernEnable()){
       topic_name = "/b_perch";
     }
-    wp_pub_ = nh_.advertise<nav_msgs::Path>("/"+ robot_name +topic_name, 1);
+    wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
   }
-  wp_pub_.publish(path);
+  wp_pub_->publish(path);
 }
 
 
@@ -476,7 +460,9 @@ void WaypointFrame::replan_enable(int b)
   else{
 	 replan_enable_ = false;
   }
-  nh_.setParam("/"+ robot_name+"/"+"replan",replan_enable_);
+  //    wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
+  node->set_parameters({rclcpp::Parameter("/"+ robot_name+"/"+"replan", replan_enable_)}); 
+  //nh_.setParam("/"+ robot_name+"/"+"replan",replan_enable_);
 }
 
 void WaypointFrame::topic_enable(int b)
@@ -503,7 +489,7 @@ void WaypointFrame::poseChanged(double val)
       sn_map_ptr_->find(std::stoi(selected_marker_name_.substr(8)));
 
   if (sn_entry == sn_map_ptr_->end())
-    ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
+    //ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
   else
   {
     Ogre::Vector3 position;
@@ -537,7 +523,7 @@ void WaypointFrame::poseChanged(double val)
 
 
 void WaypointFrame::display_corridros(){
-  marker_array.markers.clear();
+ /* marker_array.markers.clear();
   for(int i =0;i<ineq_list.size()-1;i++){
       visualization_msgs::Marker marker;
 			marker.ns = "basic_shapes";
@@ -581,7 +567,7 @@ void WaypointFrame::display_corridros(){
       marker_array.markers.push_back(marker);
     }
   }
-  pub_corridor_.publish(marker_array);
+  pub_corridor_.publish(marker_array);*/
 }
 
 
@@ -629,7 +615,7 @@ void WaypointFrame::frameChanged()
   if((new_frame != frame_id_)  && (new_frame != ""))
   {
     frame_id_ = new_frame;
-    ROS_INFO("new frame: %s", frame_id_.toStdString().c_str());
+    //ROS_INFO("new frame: %s", frame_id_.toStdString().c_str());
 
     // update the frames for all interactive markers
     std::map<int, Ogre::SceneNode *>::iterator sn_it;
@@ -662,7 +648,7 @@ void WaypointFrame::topicChanged()
 
     if((output_topic_ != "") && (output_topic_ != "/"))
     {
-      wp_pub_ = nh_.advertise<nav_msgs::Path>(output_topic_.toStdString(), 1);
+       wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
     }
   }
 }
@@ -743,27 +729,8 @@ void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   }
 }
 
-void WaypointFrame::pos_listen(const nav_msgs::Path &msg){
-  if(get2Ddisplay()){
-    display(msg,0);
-  }
-}
-
-void WaypointFrame::vel_listen(const nav_msgs::Path &msg){
-  if(get2Ddisplay()){
-    display(msg,1);
-  }
-
-}
-
-void WaypointFrame::acc_listen(const nav_msgs::Path &msg){
-  if(get2Ddisplay()){
-    display(msg,2);
-  }
-}
-
 void WaypointFrame::display(const nav_msgs::Path &msg, int order){
-	double dt = 0.01;
+	/*double dt = 0.01;
 	//Record File 
 	std::ofstream outFileX;
 	std::ofstream outFileY;
@@ -789,7 +756,7 @@ void WaypointFrame::display(const nav_msgs::Path &msg, int order){
 	// VISUALIZATION
   GnuplotPipe gp;
 	gp.sendLine("set title " + title);
-  gp.sendLine("plot 'tempX"+ der_app +".dat' , 'tempY"+ der_app +".dat', 'tempZ"+ der_app +".dat' ");
+  gp.sendLine("plot 'tempX"+ der_app +".dat' , 'tempY"+ der_app +".dat', 'tempZ"+ der_app +".dat' ");*/
 }
 
 
@@ -852,99 +819,128 @@ QString WaypointFrame::getOutputTopic()
 
   //Clear Map
 void WaypointFrame::clear_map(){
-	ros::ServiceClient client = nh_.serviceClient<std_srvs::Empty>("/"+ robot_name+"/voxblox_node/clear_map");
-	std_srvs::Empty srv;
-  //client.waitForExistence();
-  if (client.call(srv)){
-      ROS_INFO("Successfully called service clear_map");
-  }else{
-      ROS_ERROR("Failed clear_map");
-  }
+	auto client = node->create_client<std_srvs::srv::Empty>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
+	request->data = false;
+	auto result = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    {
+        if (result.get()->success)
+        {
+            RCLCPP_INFO(node->get_logger(), "Land succeeded");
+        }
+        else
+        {
+            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
+        }
+    }	
 }
 
 
   //Buttons RQT MAV MANAGER
 void WaypointFrame::motors_on_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	ros::ServiceClient client = nh_.serviceClient<std_srvs::SetBool>(srvs_name);
-	std_srvs::SetBool srv;
-	srv.request.data = true;
-	if (client.call(srv))
-	{
-		ROS_INFO("MOTORS STARTED");
-	}
-	else
-	{
-		ROS_ERROR("FAILED TO START MOTORS");
-	}	
+	auto client = node->create_client<std_srvs::srv::Bool>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::Bool::Request>();
+	request->data = true;
+	auto result = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    {
+        if (result.get()->success)
+        {
+            RCLCPP_INFO(node->get_logger(), "Land succeeded");
+        }
+        else
+        {
+            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
+        }
+    }	
 }
 
 void WaypointFrame::motors_off_push_button(){
 	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	ros::ServiceClient client = nh.serviceClient<std_srvs::SetBool>(srvs_name);
-	std_srvs::SetBool srv;
-	srv.request.data = false;
-	if (client.call(srv))
-	{
-		ROS_INFO("MOTORS STOPPED");
-	}
-	else
-	{
-		ROS_ERROR("FAILED TO STOP MOTORS");
-	}	
+	auto client = node->create_client<std_srvs::srv::Bool>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::Bool::Request>();
+	request->data = false;
+	auto result = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    {
+        if (result.get()->success)
+        {
+            RCLCPP_INFO(node->get_logger(), "Land succeeded");
+        }
+        else
+        {
+            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
+        }
+    }	
 }
 
 void WaypointFrame::hover_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
-	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	std_srvs::Trigger srv;
-	if (client.call(srv))
-	{
-		ROS_INFO("Hover Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed Hover ");
-	}		
+	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+	auto result = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    {
+        if (result.get()->success)
+        {
+            RCLCPP_INFO(node->get_logger(), "Land succeeded");
+        }
+        else
+        {
+            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
+        }
+    }	
 }
 
 void WaypointFrame::land_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	ros::NodeHandle nh;
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";
-	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	std_srvs::Trigger srv;
-	if (client.call(srv))
-	{
-		ROS_INFO("Land Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed Land ");
-	}		
+	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
+	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+	auto result = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    {
+        if (result.get()->success)
+        {
+            RCLCPP_INFO(node->get_logger(), "Land succeeded");
+        }
+        else
+        {
+            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
+        }
+    }	
 }
+
 void WaypointFrame::takeoff_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
-	ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	std_srvs::Trigger srv;
-	if (client.call(srv))
-	{
-		ROS_INFO("Takeoff Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed takeoff ");
-	}		
+	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
+	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+	auto result = client->async_send_request(request);
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    {
+        if (result.get()->success)
+        {
+            RCLCPP_INFO(node->get_logger(), "Takeoff succeeded");
+        }
+        else
+        {
+            RCLCPP_ERROR(node->get_logger(), "Takeoff failed: %s", result.get()->message.c_str());
+        }
+    }
 }
 
 void WaypointFrame::goto_push_button(){
     boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	ros::NodeHandle nh;
+	/*ros::NodeHandle nh;
 	std::string srvs_name;
 	if(relative_){
 		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
@@ -965,7 +961,7 @@ void WaypointFrame::goto_push_button(){
 	else
 	{	
 		ROS_ERROR("Failed GoTo ");
-	}		
+	}		*/
 
 }
 
@@ -984,16 +980,6 @@ void WaypointFrame::robotChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
-  path_listen_.shutdown();
-  vel_listen_.shutdown();
-  acc_listen_.shutdown();
-
-	path_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
-	vel_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
-	acc_listen_ = nh_.subscribe("/"+robot_name+"/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
-
-
-
 }
 
 void WaypointFrame::serviceChanged(){
@@ -1004,7 +990,7 @@ void WaypointFrame::serviceChanged(){
 
 void WaypointFrame::goHome_push_button(){
     boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	ros::NodeHandle nh;
+	/*ros::NodeHandle nh;
 	std::string srvs_name;
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
@@ -1021,47 +1007,6 @@ void WaypointFrame::goHome_push_button(){
 	{	
 		ROS_ERROR("Failed Go Home ");
 	}		
-  }
+  }*/
 
-}//namespace
-
-/*
-  void WaypointFrame::pl_ineqChanged(double val){
-    ineqChanged(val, 0,3);
-  }
-  void WaypointFrame::xl_ineqChanged(double val){
-    ineqChanged(val, 0,0);
-
-  }
-  void WaypointFrame::yl_ineqChanged(double val){
-    ineqChanged(val, 0,1);
-
-  }  
-  void WaypointFrame::zl_ineqChanged(double val){
-    ineqChanged(val, 0,2);
-
-  }  
-  void WaypointFrame::pu_ineqChanged(double val){
-    ineqChanged(val, 1,3);
-
-  }  
-  void WaypointFrame::xu_ineqChanged(double val){
-    ineqChanged(val, 1,0);
-  }
-
-  void WaypointFrame::yu_ineqChanged(double val){
-    ineqChanged(val, 1,1);
-  }
-
-  void WaypointFrame::zu_ineqChanged(double val){
-    ineqChanged(val, 1,2);
-  }  
-
-  void WaypointFrame::en_ineqChanged(double val){
-    ineqChanged(val, 2,0);
-  }
-
-  void WaypointFrame::do_ineqChanged(double val){
-    ineqChanged(val, 3,0);
-  }
-} // namespace*/
+}

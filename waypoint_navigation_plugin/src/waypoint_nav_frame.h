@@ -45,16 +45,17 @@
 #include <QWidget>
 #include <iostream>
 #include "gnuplot.h"
-#include "ros/ros.h"
-#include <nav_msgs/Path.h>
-#include <std_srvs/SetBool.h>
-#include <std_srvs/Trigger.h>
-#include <std_msgs/Bool.h>
-#include <std_srvs/Empty.h>
-#include <mav_manager/Vec4.h>
+#include "rclcpp/rclcpp.hpp"
+#include <nav_msgs/msg/Path.h>
+#include <std_msgs/msg/Bool.h>
+#include <std_srvs/srv/set_bool.h>
+#include <std_srvs/srv/Trigger.h>
+#include <std_srvs/srv/Empty.h>
 #include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
-#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/msg/MarkerArray.h>
+//#include <mav_manager/Vec4.h>
+
 
 
 typedef struct {
@@ -63,8 +64,8 @@ typedef struct {
     bool enable; //Declares wether this constraint is active or not
 } waypoint_ineq_const;
 
-  static const std::string Deriv_title[5] = { "'Pos'", "'Vel'", "'accel'", "'jerk'" , "'snap'"};
-  static const std::string append[5] = { "Pos", "Vel", "accel", "jerk" , "snap"};
+static const std::string Deriv_title[5] = { "'Pos'", "'Vel'", "'accel'", "'jerk'" , "'snap'"};
+static const std::string append[5] = { "Pos", "Vel", "accel", "jerk" , "snap"};
 
 namespace Ogre
 {
@@ -187,19 +188,15 @@ private Q_SLOTS:
   void do_ineqChanged(double val);*/
 
 private:
-
-  ros::NodeHandle nh_;
-  ros::Publisher wp_pub_;
-  ros::Publisher pub_corridor_;
-  ros::Publisher path_clear_pub_;
+  rclcpp::Node::SharedPtr node;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr wp_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_corridor_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr path_clear_pub_;
   
-  ros::Subscriber path_listen_;
-  ros::Subscriber vel_listen_;
-  ros::Subscriber acc_listen_;
+  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ path_listen_;
+  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
+  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ acc_listen_;
 
-  void pos_listen(const nav_msgs::Path &msg);
-  void vel_listen(const nav_msgs::Path &msg);
-  void acc_listen(const nav_msgs::Path &msg);
   void display(const nav_msgs::Path &msg, int index);
 
 
@@ -233,7 +230,7 @@ private:
 
   //mutex for changes of variables
   boost::mutex frame_updates_mutex_;
-  visualization_msgs::MarkerArray marker_array;
+  visualization_msgs::msg::MarkerArray marker_array;
   std::string selected_marker_name_;
 
 };

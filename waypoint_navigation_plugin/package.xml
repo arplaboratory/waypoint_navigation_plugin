@@ -9,15 +9,17 @@
 
   <author>Dinesh Thakur</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>qtbase5-dev</build_depend>
 
   <depend>rviz</depend>
   <depend>mav_manager</depend>
   <depend>rosbag</depend>
   <depend>std_srvs</depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-gui</exec_depend>
+  <exec_depend>libqt5-opengl</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
 
-  <export>
-    <rosdoc config="${prefix}/rosdoc.yaml"/>
-    <rviz plugin="${prefix}/waypoint_nav_plugin_description.xml"/>
-  </export>
 </package>

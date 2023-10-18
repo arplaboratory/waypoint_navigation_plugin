@@ -34,9 +34,9 @@
 
 #include <rviz/tool.h>
 
-#include <visualization_msgs/InteractiveMarker.h>
-#include <interactive_markers/interactive_marker_server.h>
-#include <interactive_markers/menu_handler.h>
+#include <visualization_msgs/msg/InteractiveMarker.h>
+#include <interactive_markers/msg/interactive_marker_server.h>
+#include <interactive_markers/msg/menu_handler.h>
 
 #include "waypoint_nav_frame.h"
 namespace Ogre
@@ -81,7 +81,7 @@ public:
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
 
 private:
-  void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback);
+  void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedbackConstPtr &feedback);
   void getMarkerPoses();
   void clearAllWaypoints();
 
@@ -92,8 +92,8 @@ private:
   WaypointFrame *frame_;
   rviz::PanelDockWidget* frame_dock_;
 
-  interactive_markers::InteractiveMarkerServer server_;
-  interactive_markers::MenuHandler menu_handler_;
+  interactive_markers::msg::InteractiveMarkerServer server_;
+  interactive_markers::msg::MenuHandler menu_handler_;
 
   //map that stores waypoints based on unique names
   typedef std::map<int, Ogre::SceneNode* > M_StringToSNPtr;
