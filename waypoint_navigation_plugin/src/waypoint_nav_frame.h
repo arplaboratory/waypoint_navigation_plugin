@@ -46,14 +46,14 @@
 #include <iostream>
 #include "gnuplot.h"
 #include "rclcpp/rclcpp.hpp"
-#include <nav_msgs/msg/Path.h>
-#include <std_msgs/msg/Bool.h>
-#include <std_srvs/srv/set_bool.h>
-#include <std_srvs/srv/Trigger.h>
-#include <std_srvs/srv/Empty.h>
+#include <nav_msgs/msg/path.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_srvs/srv/set_bool.hpp>
+#include <std_srvs/srv/trigger.hpp>
+#include <std_srvs/srv/empty.hpp>
 #include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
-#include <visualization_msgs/msg/MarkerArray.h>
+#include <visualization_msgs/msg/marker_array.hpp>
 //#include <mav_manager/Vec4.h>
 
 
@@ -197,7 +197,7 @@ private:
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ acc_listen_;
 
-  void display(const nav_msgs::Path &msg, int index);
+ // void display(const nav_msgs::msg::Path &msg, int index);
 
 
   WaypointNavTool* wp_nav_tool_;

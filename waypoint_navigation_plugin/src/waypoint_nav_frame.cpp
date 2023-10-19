@@ -36,15 +36,13 @@
 /* Author: Dinesh Thakur - Modified for waypoint navigation */
 
 #include <OGRE/OgreSceneManager.h>
-#include <rviz/display_context.h>
-#include <interactive_markers/msg/interactive_marker_server.h>
-#include <rosbag/bag.h>
-#include <rosbag/view.h>
+//#include <rviz/display_context.h>
+#include <interactive_markers/interactive_marker_server.hpp>
+//#include <rosbag/bag.h>
+//#include <rosbag/view.h>
 
 #include "waypoint_nav_tool.h"
-
-//#include "waypoint_nav_frame.h"
-//#include "waypoint_nav_frame.h"
+#include "waypoint_nav_frame.h"
 
 #include <QFileDialog>
 #include <boost/foreach.hpp>
@@ -65,9 +63,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   , selected_marker_name_("waypoint1")
   , wp_nav_tool_(wp_tool)
 {
-  scene_manager_ = context_->getSceneManager();
+  //scene_manager_ = context_->getSceneManager();
 
-  // set up the GUI
+  // set up the GUI 
   node = rclcpp::Node::make_shared("wp_node");
   ui_->setupUi(this);
   pub_corridor_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("corridors", 1); 
@@ -112,8 +110,8 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
   
-  rclcpp::Node::declare_parameter("/"+ robot_name+"/"+"replan",false);
-  rclcpp::Node::declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
+  node->declare_parameter("/"+ robot_name+"/"+"replan",false);
+  node->declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
 	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	//vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	//acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
@@ -133,7 +131,7 @@ void WaypointFrame::enable()
 
 void WaypointFrame::disable()
 {
-  wp_pub_.shutdown();
+  //wp_pub_.shutdown();
   hide();
 }
 
@@ -330,7 +328,7 @@ void WaypointFrame::setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, boo
 
 void WaypointFrame::publishButtonClicked()
 {
-  nav_msgs::Path path;
+  nav_msgs::msg::Path path;
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   if(!getTopicOveride()){
     std::string topic_name = "/waypoints";
@@ -371,7 +369,7 @@ void WaypointFrame::publishButtonClicked()
 
 void WaypointFrame::perchClicked()
 {
-  nav_msgs::Path path;
+  nav_msgs::msg::Path path;
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
   {
@@ -410,6 +408,7 @@ void WaypointFrame::perchClicked()
 
 void WaypointFrame::clearAllWaypoints()
 {
+  /*
   //destroy the ogre scene nodes
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
@@ -423,7 +422,7 @@ void WaypointFrame::clearAllWaypoints()
 
   //clear the interactive markers
   server_->clear();
-  server_->applyChanges();
+  server_->applyChanges();*/
 }
 
 void WaypointFrame::heightChanged(double h)
@@ -452,7 +451,6 @@ void WaypointFrame::bool2DChanged(int b)
 void WaypointFrame::replan_enable(int b)
 {
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  ros::NodeHandle nh;
   if (b ==2){
 	  replan_enable_ = true;
 
@@ -489,6 +487,7 @@ void WaypointFrame::poseChanged(double val)
       sn_map_ptr_->find(std::stoi(selected_marker_name_.substr(8)));
 
   if (sn_entry == sn_map_ptr_->end())
+    RCLCPP_ERROR(node->get_logger(),"%s not found in map", selected_marker_name_.c_str());
     //ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
   else
   {
@@ -503,7 +502,7 @@ void WaypointFrame::poseChanged(double val)
     wp_name << "waypoint" << sn_entry->first;
     std::string wp_name_str(wp_name.str());
 
-    visualization_msgs::InteractiveMarker int_marker;
+    visualization_msgs::msg::InteractiveMarker int_marker;
     if(server_->get(wp_name_str, int_marker))
     {
       int_marker.pose.position.x = position.x;
@@ -575,7 +574,7 @@ void WaypointFrame::ineqChanged(double val, int mode, int axes)
 {
   int index = std::stoi(selected_marker_name_.substr(8))-1;
   if (index >= ineq_list.size())
-    ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
+    RCLCPP_ERROR(node->get_logger(),"%s not found in map", selected_marker_name_.c_str());
   else
   {
     if(mode ==0){
@@ -625,7 +624,7 @@ void WaypointFrame::frameChanged()
       wp_name << "waypoint" << sn_it->first;
       std::string wp_name_str(wp_name.str());
 
-      visualization_msgs::InteractiveMarker int_marker;
+      visualization_msgs::msg::InteractiveMarker int_marker;
       if(server_->get(wp_name_str, int_marker))
       {
         int_marker.header.frame_id = new_frame.toStdString();
@@ -643,12 +642,12 @@ void WaypointFrame::topicChanged()
   // Only take action if the name has changed.
   if(new_topic != output_topic_)
   {
-    wp_pub_.shutdown();
+    //wp_pub_->shutdown();
     output_topic_ = new_topic;
 
     if((output_topic_ != "") && (output_topic_ != "/"))
     {
-       wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
+       wp_pub_ = node->create_publisher<nav_msgs::msg::Path>(output_topic_.toStdString(), 1);
     }
   }
 }
@@ -693,12 +692,16 @@ void WaypointFrame::getPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   position.y = ui_->y_doubleSpinBox->value();
   position.z = ui_->z_doubleSpinBox->value();
   double yaw = ui_->yaw_doubleSpinBox->value();
-
-  tf::Quaternion qt = tf::createQuaternionFromYaw(yaw);
-  quat.x = qt.x();
-  quat.y = qt.y();
-  quat.z = qt.z();
-  quat.w = qt.w();
+  //extract quaternion from yaw simple conversion look Hopf Firbation paper
+  quat.x = 0.0;
+  quat.y = 0.0;
+  quat.z = sin(yaw/2);
+  quat.w = cos(yaw/2);
+  //tf::Quaternion qt = tf::createQuaternionFromYaw(yaw);
+  //quat.x = qt.x();
+  //quat.y = qt.y();
+  //quat.z = qt.z();
+  //quat.w = qt.w();
 
   }
 }
@@ -716,9 +719,12 @@ void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   ui_->x_doubleSpinBox->setValue(position.x);
   ui_->y_doubleSpinBox->setValue(position.y);
   ui_->z_doubleSpinBox->setValue(position.z);
+  //extrat yaw from quaterinon
 
-  tf::Quaternion qt(quat.x, quat.y, quat.z, quat.w);
-  ui_->yaw_doubleSpinBox->setValue(tf::getYaw(qt));
+  double  yaw = atan2(2.0*(quat.y*quat.z + quat.w*quat.x), 
+  quat.w*quat.w - quat.x*quat.x - quat.y*quat.y + quat.z*quat.z);
+  //tf::Quaternion qt(quat.x, quat.y, quat.z, quat.w);
+  ui_->yaw_doubleSpinBox->setValue(yaw);
 
   //enable the signals
   ui_->x_doubleSpinBox->blockSignals(false);
@@ -729,8 +735,9 @@ void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   }
 }
 
-void WaypointFrame::display(const nav_msgs::Path &msg, int order){
-	/*double dt = 0.01;
+/*
+void WaypointFrame::display(const nav_msgs::msg::Path &msg, int order){
+	double dt = 0.01;
 	//Record File 
 	std::ofstream outFileX;
 	std::ofstream outFileY;
@@ -756,9 +763,9 @@ void WaypointFrame::display(const nav_msgs::Path &msg, int order){
 	// VISUALIZATION
   GnuplotPipe gp;
 	gp.sendLine("set title " + title);
-  gp.sendLine("plot 'tempX"+ der_app +".dat' , 'tempY"+ der_app +".dat', 'tempZ"+ der_app +".dat' ");*/
+  gp.sendLine("plot 'tempX"+ der_app +".dat' , 'tempY"+ der_app +".dat', 'tempZ"+ der_app +".dat' ");
 }
-
+*/
 
 void WaypointFrame::setWpLabel(Ogre::Vector3 position)
 {
@@ -819,32 +826,20 @@ QString WaypointFrame::getOutputTopic()
 
   //Clear Map
 void WaypointFrame::clear_map(){
-	auto client = node->create_client<std_srvs::srv::Empty>(srvs_name);
+	auto client = node->create_client<std_srvs::srv::Empty>("/voxblox_node/clear_map");
 	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
-	request->data = false;
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
-    {
-        if (result.get()->success)
-        {
-            RCLCPP_INFO(node->get_logger(), "Land succeeded");
-        }
-        else
-        {
-            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
-        }
-    }	
 }
 
 
   //Buttons RQT MAV MANAGER
 void WaypointFrame::motors_on_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	auto client = node->create_client<std_srvs::srv::Bool>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::Bool::Request>();
+	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = true;
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
     {
         if (result.get()->success)
         {
@@ -858,13 +853,12 @@ void WaypointFrame::motors_on_push_button(){
 }
 
 void WaypointFrame::motors_off_push_button(){
-	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	auto client = node->create_client<std_srvs::srv::Bool>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::Bool::Request>();
+	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = false;
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
     {
         if (result.get()->success)
         {
@@ -879,12 +873,11 @@ void WaypointFrame::motors_off_push_button(){
 
 void WaypointFrame::hover_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
     {
         if (result.get()->success)
         {
@@ -899,12 +892,11 @@ void WaypointFrame::hover_push_button(){
 
 void WaypointFrame::land_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
     {
         if (result.get()->success)
         {
@@ -919,13 +911,12 @@ void WaypointFrame::land_push_button(){
 
 void WaypointFrame::takeoff_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	ros::NodeHandle nh;
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
 	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::executor::FutureReturnCode::SUCCESS)
+    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
     {
         if (result.get()->success)
         {
@@ -1009,4 +1000,5 @@ void WaypointFrame::goHome_push_button(){
 	}		
   }*/
 
+}
 }

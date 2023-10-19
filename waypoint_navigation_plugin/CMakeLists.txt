@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.3.0)
 project(waypoint_navigation_plugin)
 cmake_policy(SET CMP0069 NEW)
 
@@ -17,6 +17,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(ament_cmake QUIET)
 find_package(rclcpp REQUIRED)
 find_package(rviz2 REQUIRED)
+find_package(rviz_common REQUIRED)
+find_package(rviz_default_plugins REQUIRED)
+find_package(rviz_rendering REQUIRED)
+find_package(rviz_ogre_vendor REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosbag2 REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Test Concurrent)
@@ -25,8 +29,6 @@ set(CMAKE_AUTOMOC ON)
 
 set(dependencies
   rclcpp  
-  class_loader
-  pluginlib
   Qt5
   rviz2
   rviz_common
@@ -39,14 +41,15 @@ set(dependencies
 
 # Define source file
 set(${PROJECT_NAME}_SRCS
-    src/waypoint_nav_frame.h
-    src/waypoint_nav_tool.h
+    src/waypoint_nav_frame.cpp
+    src/waypoint_nav_tool.cpp
   #src/plugin_init.cpp
 )
 # Define header file
 set(${PROJECT_NAME}_HDRS
-  include/${PROJECT_NAME}/demo_panel.h
-  include/${PROJECT_NAME}/demo_widget.h
+    src/waypoint_nav_frame.h
+    src/waypoint_nav_tool.h
+    src/gnuplot.h
 )
 
 
@@ -81,7 +84,7 @@ target_link_libraries(${PROJECT_NAME} rviz_common::rviz_common)
 target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RVIZ_DEFAULT_PLUGINS_BUILDING_LIBRARY")
 
-pluginlib_export_plugin_description_file(rviz_common demo_plugin.xml)
+pluginlib_export_plugin_description_file(rviz_common waypoint_nav_plugin_description.xml)
 
 install(
   TARGETS ${PROJECT_NAME}

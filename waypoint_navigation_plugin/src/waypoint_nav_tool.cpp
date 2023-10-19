@@ -33,18 +33,6 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
 
-#include <rcutils/logging_macros.h>
-
-#include <rviz/viewport_mouse_event.h>
-#include <rviz/visualization_manager.h>
-#include <rviz/mesh_loader.h>
-#include <rviz/geometry.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/window_manager_interface.h>
-#include <rviz/validate_floats.h>
-#include <rviz/panel_dock_widget.h>
-
-#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "waypoint_nav_tool.h"
 

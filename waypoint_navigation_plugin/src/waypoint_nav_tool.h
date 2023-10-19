@@ -32,12 +32,20 @@
 #ifndef WAYPOINT_NAV_FLAG_TOOL_H
 #define WAYPOINT_NAV_FLAG_TOOL_H
 
-#include <rviz/tool.h>
+#include <rviz_common/panel.hpp>
+#include "interactive_markers/interactive_marker_server.hpp"
+#include "interactive_markers/menu_handler.hpp"
+#include "rviz_common/viewport_mouse_event.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "visualization_msgs/msg/marker.hpp"
+#include "visualization_msgs/msg/interactive_marker.hpp"
+#include "visualization_msgs/msg/interactive_marker_feedback.hpp"
+#include <rcutils/logging_macros.h>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/display_context.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include <visualization_msgs/msg/InteractiveMarker.h>
-#include <interactive_markers/msg/interactive_marker_server.h>
-#include <interactive_markers/msg/menu_handler.h>
-
+using std::placeholders::_1;
 #include "waypoint_nav_frame.h"
 namespace Ogre
 {
@@ -61,7 +69,7 @@ class QuadrotorSteeringWidget;
 namespace waypoint_nav_plugin
 {
 
-class WaypointNavTool: public rviz::Tool
+class WaypointNavTool: public rviz_common::Tool
 {
 
 Q_OBJECT
@@ -74,14 +82,14 @@ public:
   virtual void activate();
   virtual void deactivate();
 
-  virtual int processMouseEvent(rviz::ViewportMouseEvent& event);
+  virtual int processMouseEvent(rviz_common::ViewportMouseEvent& event);
 
-  virtual void load(const rviz::Config& config);
-  virtual void save(rviz::Config config) const;
+  virtual void load(const rviz_common::Config& config);
+  virtual void save(rviz_common::Config config) const;
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
 
 private:
-  void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedbackConstPtr &feedback);
+  void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback &feedback);
   void getMarkerPoses();
   void clearAllWaypoints();
 
@@ -92,8 +100,8 @@ private:
   WaypointFrame *frame_;
   rviz::PanelDockWidget* frame_dock_;
 
-  interactive_markers::msg::InteractiveMarkerServer server_;
-  interactive_markers::msg::MenuHandler menu_handler_;
+  interactive_markers::InteractiveMarkerServer server_;
+  interactive_markers::MenuHandler menu_handler_;
 
   //map that stores waypoints based on unique names
   typedef std::map<int, Ogre::SceneNode* > M_StringToSNPtr;
