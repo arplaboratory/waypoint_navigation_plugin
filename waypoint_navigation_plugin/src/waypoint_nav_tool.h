@@ -36,6 +36,8 @@
 #include "interactive_markers/interactive_marker_server.hpp"
 #include "interactive_markers/menu_handler.hpp"
 #include "rviz_common/viewport_mouse_event.hpp"
+#include "rviz_rendering/viewport_projection_finder.hpp"
+#include "rviz_common/properties/vector_property.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/interactive_marker.hpp"
@@ -44,8 +46,11 @@
 #include <rviz_common/tool.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_rendering/mesh_loader.hpp>
-#include "rviz_rendering/viewport_projection_finder.hpp"
 #include <geometry_msgs/msg/pose_stamped.hpp>
+
+#include "rviz_common/render_panel.hpp"
+
+#include "rviz_rendering/geometry.hpp"
 
 using std::placeholders::_1;
 #include "waypoint_nav_frame.h"
@@ -108,6 +113,7 @@ private:
   //map that stores waypoints based on unique names
   typedef std::map<int, Ogre::SceneNode* > M_StringToSNPtr;
   M_StringToSNPtr sn_map_;
+  rviz_common::properties::VectorProperty * current_flag_property_;
 
   //index used for creating unique marker names
   int unique_ind_;

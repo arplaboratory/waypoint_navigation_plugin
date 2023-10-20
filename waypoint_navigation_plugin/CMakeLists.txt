@@ -87,6 +87,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNC
 target_compile_definitions(${PROJECT_NAME} PRIVATE "RVIZ_DEFAULT_PLUGINS_BUILDING_LIBRARY")
 
 pluginlib_export_plugin_description_file(rviz_common waypoint_nav_plugin_description.xml)
+register_rviz_ogre_media_exports(DIRECTORIES "media")
 
 install(
   TARGETS ${PROJECT_NAME}

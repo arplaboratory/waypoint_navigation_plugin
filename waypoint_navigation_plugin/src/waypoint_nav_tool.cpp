@@ -45,9 +45,11 @@ WaypointNavTool::WaypointNavTool()
   , frame_(NULL)
   , server_("waypoint_nav", "", false)
   , unique_ind_(0)
+  , current_flag_property_(NULL)
 {
   shortcut_key_ = 'l';
 }
+
 
 WaypointNavTool::~WaypointNavTool()
 {
@@ -81,8 +83,8 @@ void WaypointNavTool::onInitialize()
   rviz_common::WindowManagerInterface* window_context = context_->getWindowManager();
   frame_ = new WaypointFrame(context_, &sn_map_, &server_, &unique_ind_, NULL, this);
 
-  if (window_context)
-    frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
+  //if (window_context)
+  //  frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
 
   frame_->enable();
 
@@ -113,6 +115,11 @@ void WaypointNavTool::activate()
   if(moving_flag_node_)
   {
     moving_flag_node_->setVisible(true);
+    current_flag_property_ = new rviz_common::properties::VectorProperty(
+      "Flag " + QString::number(sn_map_.size()));
+    current_flag_property_->setReadOnly(true);
+    getPropertyContainer()->addChild(current_flag_property_);
+
   }
 }
 
@@ -129,6 +136,8 @@ void WaypointNavTool::deactivate()
   if(moving_flag_node_)
   {
     moving_flag_node_->setVisible(false);
+    delete current_flag_property_;
+    current_flag_property_ = NULL;
   }
 
 }
@@ -149,44 +158,50 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
   auto projection = projection_finder->getViewportPointProjectionOnXYPlane(
     event.panel->getRenderWindow(), event.x, event.y);
   Ogre::Vector3 intersection = projection.second;
-    moving_flag_node_->setVisible(true);
-    moving_flag_node_->setPosition(intersection);
+    if (projection.first) {
 
-    frame_->setWpLabel(intersection);
+      moving_flag_node_->setVisible(true);
+      moving_flag_node_->setPosition(intersection);
 
-    //check if mouse pointer is near existing waypoint
-    M_StringToSNPtr::iterator sn_it;
-    for(sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
-    {
-      Ogre::Vector3 stored_pos = sn_it->second->getPosition();
-      double distance = std::sqrt(pow(stored_pos.x - intersection.x,2) + pow(stored_pos.y - intersection.y,2));
+      frame_->setWpLabel(intersection);
 
-      if(distance < 0.4)
+      //check if mouse pointer is near existing waypoint
+      M_StringToSNPtr::iterator sn_it;
+      for(sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
       {
-        moving_flag_node_->setVisible(false);
+        Ogre::Vector3 stored_pos = sn_it->second->getPosition();
+        double distance = std::sqrt(pow(stored_pos.x - intersection.x,2) + pow(stored_pos.y - intersection.y,2));
 
-        //delete the waypoint if right clicked
-        if(event.rightDown())
+        if(distance < 0.4)
         {
-          sn_it->second->detachAllObjects();
-          std::stringstream wp_name;
-          wp_name << "waypoint" << sn_it->first;
-          std::string wp_name_str(wp_name.str());
-          server_.erase(wp_name_str);
-          server_.applyChanges();
-          sn_map_.erase(sn_it);
+          moving_flag_node_->setVisible(false);
 
-          moving_flag_node_->setVisible(true);
-          return Render | Finished;
+          //delete the waypoint if right clicked
+          if(event.rightDown())
+          {
+            sn_it->second->detachAllObjects();
+            std::stringstream wp_name;
+            wp_name << "waypoint" << sn_it->first;
+            std::string wp_name_str(wp_name.str());
+            server_.erase(wp_name_str);
+            server_.applyChanges();
+            sn_map_.erase(sn_it);
+
+            moving_flag_node_->setVisible(true);
+            return Render | Finished;
+          }
         }
       }
-    }
-
+    
     //add a waypoint
     if(event.leftDown())
     {
       makeIm(intersection, quat);
       return Render | Finished;
+    }
+    }
+    else{
+      moving_flag_node_->setVisible(false);
     }
   return Render;
 }
