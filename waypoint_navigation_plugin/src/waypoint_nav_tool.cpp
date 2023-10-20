@@ -65,9 +65,11 @@ void WaypointNavTool::onInitialize()
 {
   flag_resource_ = "package://waypoint_navigation_plugin/media/flag.dae";
 
-  if(rviz::loadMeshFromResource(flag_resource_).isNull())
-  {
-    //ROS_ERROR("WaypointNavTool: failed to load model resource '%s'.", flag_resource_.c_str());
+  if (!rviz_rendering::loadMeshFromResource(flag_resource_).isNull()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("waypoint nav plugin"),
+      "waypoint nav plugin: failed to load model resource '%s'.",
+      flag_resource_.c_str());
     return;
   }
 
@@ -76,7 +78,7 @@ void WaypointNavTool::onInitialize()
   moving_flag_node_->attachObject(entity);
   moving_flag_node_->setVisible(false);
 
-  rviz::WindowManagerInterface* window_context = context_->getWindowManager();
+  rviz_common::WindowManagerInterface* window_context = context_->getWindowManager();
   frame_ = new WaypointFrame(context_, &sn_map_, &server_, &unique_ind_, NULL, this);
 
   if (window_context)
@@ -85,8 +87,8 @@ void WaypointNavTool::onInitialize()
   frame_->enable();
 
   //add Delete menu for interactive marker
-  menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this, _1));
-  menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this, _1));
+  menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
+  menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
 }
 
 // Activation and deactivation
@@ -133,7 +135,7 @@ void WaypointNavTool::deactivate()
 
 // Handling mouse events
 
-int WaypointNavTool::processMouseEvent(rviz::ViewportMouseEvent& event)
+int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
 {
   if(!moving_flag_node_)
   {
@@ -141,13 +143,12 @@ int WaypointNavTool::processMouseEvent(rviz::ViewportMouseEvent& event)
   }
 
   double height = frame_->getDefaultHeight();
-  Ogre::Vector3 intersection;
   Ogre::Quaternion quat;
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, height);
-  if(rviz::getPointOnPlaneFromWindowXY(event.viewport,
-                                         ground_plane,
-                                         event.x, event.y, intersection))
-  {
+  auto projection_finder = std::make_shared<rviz_rendering::ViewportProjectionFinder>();
+  auto projection = projection_finder->getViewportPointProjectionOnXYPlane(
+    event.panel->getRenderWindow(), event.x, event.y);
+  Ogre::Vector3 intersection = projection.second;
     moving_flag_node_->setVisible(true);
     moving_flag_node_->setPosition(intersection);
 
@@ -187,11 +188,6 @@ int WaypointNavTool::processMouseEvent(rviz::ViewportMouseEvent& event)
       makeIm(intersection, quat);
       return Render | Finished;
     }
-  }
-  else
-  {
-    moving_flag_node_->setVisible(false); // If the mouse is not pointing at the ground plane, don't show the flag.
-  }
   return Render;
 }
 
@@ -203,11 +199,14 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     wp_name << "waypoint" << unique_ind_;
     std::string wp_name_str(wp_name.str());
 
-    if(rviz::loadMeshFromResource(flag_resource_).isNull())
-    {
-     // ROS_ERROR("WaypointNavTool: failed to load model resource '%s'.", flag_resource_.c_str());
+    if (rviz_rendering::loadMeshFromResource(flag_resource_).isNull()) {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("waypoint nav plugin"),
+        "waypoint nav plugin: failed to load model resource '%s'.",
+        flag_resource_.c_str());
       return;
     }
+
 
     // create a new flag in the Ogre scene and save it in a std::map.
     Ogre::SceneNode* sn_ptr = scene_manager_->getRootSceneNode()->createChildSceneNode();
@@ -239,7 +238,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 
     frame_->setWpCount(num_wp);
 
-    visualization_msgs::InteractiveMarker int_marker;
+    visualization_msgs::msg::InteractiveMarker int_marker;
     //int_marker.header.stamp = ros::Time::now();
     int_marker.header.frame_id = frame_->getFrameId().toStdString();
 
@@ -249,8 +248,8 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     int_marker.description = wp_name_str;
 
     // create a cylinder marker
-    visualization_msgs::Marker cyn_marker;
-    cyn_marker.type = visualization_msgs::Marker::CYLINDER;
+    visualization_msgs::msg::Marker cyn_marker;
+    cyn_marker.type = visualization_msgs::msg::Marker::CYLINDER;
     cyn_marker.scale.x = 2.0;
     cyn_marker.scale.y = 2.0;
     cyn_marker.scale.z = 0.2;
@@ -260,30 +259,31 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     cyn_marker.color.a = 0.5;
 
     // create a non-interactive control which contains the marker
-    visualization_msgs::InteractiveMarkerControl cyn_control;
+    visualization_msgs::msg::InteractiveMarkerControl cyn_control;
     cyn_control.always_visible = true;
     cyn_control.markers.push_back(cyn_marker);
 
     // add the control to the interactive marker
     int_marker.controls.push_back(cyn_control);
 
-    visualization_msgs::InteractiveMarkerControl control;
+    visualization_msgs::msg::InteractiveMarkerControl control;
     control.orientation.w =  0.707106781;
     control.orientation.x = 0;
     control.orientation.y =  0.707106781;
     control.orientation.z = 0;
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_ROTATE;
     int_marker.controls.push_back(control);
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MOVE_AXIS;
     int_marker.controls.push_back(control);
 
-    control.interaction_mode = visualization_msgs::InteractiveMarkerControl::MENU;
+    control.interaction_mode = visualization_msgs::msg::InteractiveMarkerControl::MENU;
     control.name = "menu_delete";
     control.description = wp_name_str.substr(8);
     int_marker.controls.push_back(control);
 
     server_.insert(int_marker);
-    server_.setCallback(int_marker.name, boost::bind(&WaypointNavTool::processFeedback, this, _1));
+    server_.setCallback(int_marker.name,
+     boost::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
     menu_handler_.apply(server_, int_marker.name);
 
     //Set the current marker as selected
@@ -297,25 +297,27 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 }
 
 void WaypointNavTool::processFeedback(
-      const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+      const visualization_msgs::msg::InteractiveMarkerFeedback &feedback)
 {
-  switch (feedback->event_type)
+  switch (feedback.event_type)
   {
-    case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
+    case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
 
      M_StringToSNPtr::iterator sn_entry =
-        sn_map_.find(std::stoi(feedback->marker_name.substr(8)));
+        sn_map_.find(std::stoi(feedback.marker_name.substr(8)));
       if (sn_entry == sn_map_.end())
+        std::cout << feedback.marker_name.c_str() <<  "not found in map" <<std::endl;
        // ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
       else
       {
 
-        if(feedback->menu_entry_id == 1)
+        if(feedback.menu_entry_id == 1)
         {
           //Delete selected waypoint
           std::stringstream wp_name;
-          wp_name << "waypoint" << sn_entry->first;
+          wp_name << "waypoint" << sn_entry->first;  
+
           std::string wp_name_str(wp_name.str());
           server_.erase(wp_name_str);
 
@@ -351,22 +353,23 @@ void WaypointNavTool::processFeedback(
 
           frame_->setWpLabel(position);
 
-          server_.setPose(feedback->marker_name, pos);
+          server_.setPose(feedback.marker_name, pos);
           server_.applyChanges();
         }
       }
     }
       break;
-    case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+    case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
     {
-      M_StringToSNPtr::iterator sn_entry = sn_map_.find(std::stoi(feedback->marker_name.substr(8)));
+      M_StringToSNPtr::iterator sn_entry = sn_map_.find(std::stoi(feedback.marker_name.substr(8)));
 
       if (sn_entry == sn_map_.end())
+        std::cout << feedback.marker_name.c_str() <<  "not found in map" <<std::endl;
         //ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
       else
       {
         geometry_msgs::msg::PoseStamped pos;
-        pos.pose = feedback->pose;
+        pos.pose = feedback.pose;   
 
         Ogre::Vector3 position;
         position.x = pos.pose.position.x;
@@ -385,8 +388,8 @@ void WaypointNavTool::processFeedback(
 
         frame_->setWpLabel(position);
         frame_->setPose(position, quat);
-        frame_->setSelectedMarkerName(feedback->marker_name);
-        waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
+        frame_->setSelectedMarkerName(feedback.marker_name);
+        waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback.marker_name.substr(8))-1];
         frame_->setLimit(ineq.upper,ineq.lower,ineq.enable);
       }
     }
@@ -399,7 +402,7 @@ void WaypointNavTool::getMarkerPoses()
   M_StringToSNPtr::iterator sn_it;
   for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
   {
-    visualization_msgs::InteractiveMarker int_marker;
+    visualization_msgs::msg::InteractiveMarker int_marker;
 
     std::stringstream wp_name;
     wp_name << "waypoint" << sn_it->first;
@@ -407,8 +410,8 @@ void WaypointNavTool::getMarkerPoses()
     server_.get(wp_name_str, int_marker);
 
     //ROS_ERROR("pos: %g %g %g", int_marker.pose.position.x,
-    int_marker.pose.position.y,
-    int_marker.pose.position.z);
+  //  int_marker.pose.position.y,
+    //int_marker.pose.position.z);
   }
 }
 
@@ -439,12 +442,12 @@ void WaypointNavTool::clearAllWaypoints()
 // We first save the class ID to the config object so the
 // rviz::ToolManager will know what to instantiate when the config
 // file is read back in.
-void WaypointNavTool::save(rviz::Config config) const
+void WaypointNavTool::save(rviz_common::Config config) const
 {
   config.mapSetValue("Class", getClassId());
-  //rviz::Config waypoints_config = config.mapMakeChild("Waypoints");
+  //rviz_common::Config waypoints_config = config.mapMakeChild("Waypoints");
 
-  rviz::Config waypoints_config = config.mapMakeChild("WaypointsTool");
+  rviz_common::Config waypoints_config = config.mapMakeChild("WaypointsTool");
 
   waypoints_config.mapSetValue("topic", frame_->getOutputTopic());
   waypoints_config.mapSetValue("frame_id", frame_->getFrameId());
@@ -455,7 +458,7 @@ void WaypointNavTool::save(rviz::Config config) const
   // should go in a list, since they may or may not have unique keys.
   // Therefore we make a child of the map (``waypoints_config``) to store
   // the list.
-  rviz::Config waypoints_config = config.mapMakeChild("Waypoints");
+  rviz_common::Config waypoints_config = config.mapMakeChild("Waypoints");
 
   // To read the positions and names of the waypoints, we loop over the
   // the children of our Property container:
@@ -466,7 +469,7 @@ void WaypointNavTool::save(rviz::Config config) const
     rviz::Property* position_prop = container->childAt(i);
     // For each Property, we create a new Config object representing a
     // single waypoint and append it to the Config list.
-    rviz::Config waypoint_config = waypoints_config.listAppendNew();
+    rviz_common::Config waypoint_config = waypoints_config.listAppendNew();
     // Into the waypoint's config we store its name:
     waypoint_config.mapSetValue("Name", position_prop->getName());
     // ... and its position.
@@ -478,9 +481,9 @@ void WaypointNavTool::save(rviz::Config config) const
 // In a tool's load() function, we don't need to read its class
 // because that has already been read and used to instantiate the
 // object before this can have been called.
-void WaypointNavTool::load(const rviz::Config& config)
+void WaypointNavTool::load(const rviz_common::Config& config)
 {
-  rviz::Config waypoints_config = config.mapGetChild("WaypointsTool");
+  rviz_common::Config waypoints_config = config.mapGetChild("WaypointsTool");
 
   QString topic, frame;
   float height;
@@ -496,11 +499,11 @@ void WaypointNavTool::load(const rviz::Config& config)
 
 /*
   // Here we get the "waypoints" sub-config from the tool config and loop over its entries:
-  rviz::Config waypoints_config = config.mapGetChild("waypoints");
+  rviz_common::Config waypoints_config = config.mapGetChild("waypoints");
   int num_waypoints = waypoints_config.listLength();
   for(int i = 0; i < num_waypoints; i++)
   {
-    rviz::Config waypoint_config = waypoints_config.listChildAt(i);
+    rviz_common::Config waypoint_config = waypoints_config.listChildAt(i);
     // At this point each ``waypoint_config`` represents a single waypoint.
     //
     // Here we provide a default name in case the name is not in the config file for some reason:
@@ -526,6 +529,6 @@ void WaypointNavTool::load(const rviz::Config& config)
 
 } // end namespace
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(waypoint_nav_plugin::WaypointNavTool,rviz::Tool)
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(waypoint_nav_plugin::WaypointNavTool,rviz_common::Tool)
 

@@ -17,6 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(ament_cmake QUIET)
 find_package(rclcpp REQUIRED)
 find_package(rviz2 REQUIRED)
+find_package(pluginlib REQUIRED)
 find_package(rviz_common REQUIRED)
 find_package(rviz_default_plugins REQUIRED)
 find_package(rviz_rendering REQUIRED)
@@ -36,6 +37,7 @@ set(dependencies
   rviz_rendering
   rviz_ogre_vendor
   rosbag2
+  pluginlib
   std_srvs
 )
 
@@ -103,6 +105,6 @@ install(
 ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_targets(${PROJECT_NAME} HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(${dependencies})
 
 ament_package()

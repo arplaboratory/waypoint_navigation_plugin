@@ -43,6 +43,8 @@
 #include <rcutils/logging_macros.h>
 #include <rviz_common/tool.hpp>
 #include <rviz_common/display_context.hpp>
+#include <rviz_rendering/mesh_loader.hpp>
+#include "rviz_rendering/viewport_projection_finder.hpp"
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 using std::placeholders::_1;
