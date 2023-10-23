@@ -67,7 +67,7 @@ void WaypointNavTool::onInitialize()
 {
   flag_resource_ = "package://waypoint_nav_plugin/media/flag.dae";
 
-  if (!rviz_rendering::loadMeshFromResource(flag_resource_).isNull()) {
+  if (!rviz_rendering::loadMeshFromResource(flag_resource_)) {
     RCLCPP_ERROR(
       rclcpp::get_logger("waypoint nav plugin"),
       "waypoint nav plugin: failed to load model resource '%s'.",
