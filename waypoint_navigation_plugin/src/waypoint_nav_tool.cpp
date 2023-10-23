@@ -89,8 +89,8 @@ void WaypointNavTool::onInitialize()
   frame_->enable();
 
   //add Delete menu for interactive marker
-  menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this));
-  menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this));
+ // menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this));
+ // menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this));
 }
 
 // Activation and deactivation
@@ -311,8 +311,8 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     int_marker.controls.push_back(control);
 
     server_->insert(int_marker);
-    server_->setCallback(int_marker.name,
-     boost::bind(&WaypointNavTool::processFeedback, this));
+    //server_->setCallback(int_marker.name,
+    // boost::bind(&WaypointNavTool::processFeedback, this));
     menu_handler_.apply(*server_, int_marker.name);
 
     //Set the current marker as selected
