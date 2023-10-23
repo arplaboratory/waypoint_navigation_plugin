@@ -65,7 +65,7 @@ WaypointNavTool::~WaypointNavTool()
 
 void WaypointNavTool::onInitialize()
 {
-  flag_resource_ = "package://waypoint_navigation_plugin/media/flag.dae";
+  flag_resource_ = "package://waypoint_nav_plugin/media/flag.dae";
 
   if (!rviz_rendering::loadMeshFromResource(flag_resource_).isNull()) {
     RCLCPP_ERROR(
