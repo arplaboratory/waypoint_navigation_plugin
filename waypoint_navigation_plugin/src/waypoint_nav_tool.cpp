@@ -33,9 +33,8 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
 
-
 #include "waypoint_nav_tool.h"
-
+#include <boost/bind.hpp>
 namespace waypoint_nav_plugin
 {
 
