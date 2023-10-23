@@ -64,7 +64,7 @@
 
 **/
 using std::placeholders::_1;
-#include "waypoint_nav_frame.h"
+#include "waypoint_nav_frame.hpp"
 namespace Ogre
 {
 class SceneNode;

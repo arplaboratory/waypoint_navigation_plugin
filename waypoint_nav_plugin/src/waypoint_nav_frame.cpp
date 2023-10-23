@@ -41,7 +41,7 @@
 //#include <rosbag/bag.h>
 //#include <rosbag/view.h>
 
-#include "waypoint_nav_tool.h"
+#include "waypoint_nav_tool.hpp"
 //#include "waypoint_nav_frame.h"
 
 #include <QFileDialog>
