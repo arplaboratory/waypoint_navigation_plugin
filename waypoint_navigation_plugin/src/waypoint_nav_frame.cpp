@@ -51,7 +51,7 @@
 namespace waypoint_nav_plugin
 {
 
-WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr, interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent, WaypointNavTool* wp_tool)
+WaypointFrame::WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr, interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent, WaypointNavTool* wp_tool)
   : QWidget(parent)
   , context_(context)
   , ui_(new Ui::WaypointNavigationWidget())

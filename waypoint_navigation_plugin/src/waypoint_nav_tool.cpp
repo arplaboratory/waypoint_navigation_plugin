@@ -43,7 +43,8 @@ WaypointNavTool::WaypointNavTool()
   : moving_flag_node_(NULL)
   , frame_dock_(NULL)
   , frame_(NULL)
-  , server_("waypoint_nav", "", false)
+  , nh_(std::make_shared<rclcpp::Node>("w_tool"))
+ // , server_("waypoint_nav", "", false)
   , unique_ind_(0)
   , current_flag_property_(NULL)
 {
@@ -81,7 +82,7 @@ void WaypointNavTool::onInitialize()
   moving_flag_node_->setVisible(false);
 
   rviz_common::WindowManagerInterface* window_context = context_->getWindowManager();
-  frame_ = new WaypointFrame(context_, &sn_map_, &server_, &unique_ind_, NULL, this);
+  frame_ = new WaypointFrame(context_, &sn_map_, server_, &unique_ind_, NULL, this);
 
   //if (window_context)
   //  frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
@@ -89,8 +90,8 @@ void WaypointNavTool::onInitialize()
   frame_->enable();
 
   //add Delete menu for interactive marker
-  menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
-  menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
+  menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this));
+  menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this));
 }
 
 // Activation and deactivation
@@ -100,9 +101,9 @@ void WaypointNavTool::onInitialize()
 // by clicking on its button in the toolbar or by pressing its hotkey.
 //
 // First we set the moving flag node to be visible, then we create an
-// rviz::VectorProperty to show the user the position of the flag.
-// Unlike rviz::Display, rviz::Tool is not a subclass of
-// rviz::Property, so when we want to add a tool property we need to
+// rviz_common::VectorProperty to show the user the position of the flag.
+// Unlike rviz_common::Display, rviz_common::Tool is not a subclass of
+// rviz_common::Property, so when we want to add a tool property we need to
 // get the parent container with getPropertyContainer() and add it to
 // that.
 //
@@ -119,10 +120,24 @@ void WaypointNavTool::activate()
       "Flag " + QString::number(sn_map_.size()));
     current_flag_property_->setReadOnly(true);
     getPropertyContainer()->addChild(current_flag_property_);
-
+    server_ = new interactive_markers::InteractiveMarkerServer("waypoint", 
+    nh_->get_node_base_interface(),
+    nh_->get_node_clock_interface(),
+    nh_->get_node_logging_interface(),
+    nh_->get_node_topics_interface(),
+    nh_->get_node_services_interface());
+    thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
   }
 }
 
+
+ void WaypointNavTool::spin()
+ {
+    exec_.add_node(nh_);
+    while(rclcpp::ok()){
+       exec_.spin_some();
+    }
+ }
 // deactivate() is called when the tool is being turned off because
 // another tool has been chosen.
 //
@@ -183,8 +198,8 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
             std::stringstream wp_name;
             wp_name << "waypoint" << sn_it->first;
             std::string wp_name_str(wp_name.str());
-            server_.erase(wp_name_str);
-            server_.applyChanges();
+            server_->erase(wp_name_str);
+            server_->applyChanges();
             sn_map_.erase(sn_it);
 
             moving_flag_node_->setVisible(true);
@@ -296,10 +311,10 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     control.description = wp_name_str.substr(8);
     int_marker.controls.push_back(control);
 
-    server_.insert(int_marker);
-    server_.setCallback(int_marker.name,
-     boost::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
-    menu_handler_.apply(server_, int_marker.name);
+    server_->insert(int_marker);
+    server_->setCallback(int_marker.name,
+     boost::bind(&WaypointNavTool::processFeedback, this));
+    menu_handler_.apply(*server_, int_marker.name);
 
     //Set the current marker as selected
     Ogre::Vector3 p = position;
@@ -308,7 +323,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     frame_->setWpLabel(p);
     frame_->setPose(p, q);
     frame_->push_newIneq_const();
-    server_.applyChanges();
+    server_->applyChanges();
 }
 
 void WaypointNavTool::processFeedback(
@@ -334,10 +349,10 @@ void WaypointNavTool::processFeedback(
           wp_name << "waypoint" << sn_entry->first;  
 
           std::string wp_name_str(wp_name.str());
-          server_.erase(wp_name_str);
+          server_->erase(wp_name_str);
 
-          menu_handler_.reApply(server_);
-          server_.applyChanges();
+          menu_handler_.reApply(*server_);
+          server_->applyChanges();
           sn_entry->second->detachAllObjects();
           sn_map_.erase(sn_entry);
 
@@ -368,8 +383,8 @@ void WaypointNavTool::processFeedback(
 
           frame_->setWpLabel(position);
 
-          server_.setPose(feedback.marker_name, pos);
-          server_.applyChanges();
+          server_->setPose(feedback.marker_name, pos);
+          server_->applyChanges();
         }
       }
     }
@@ -422,7 +437,7 @@ void WaypointNavTool::getMarkerPoses()
     std::stringstream wp_name;
     wp_name << "waypoint" << sn_it->first;
     std::string wp_name_str(wp_name.str());
-    server_.get(wp_name_str, int_marker);
+    server_->get(wp_name_str, int_marker);
 
     //ROS_ERROR("pos: %g %g %g", int_marker.pose.position.x,
   //  int_marker.pose.position.y,
@@ -455,7 +470,7 @@ void WaypointNavTool::clearAllWaypoints()
 // length, so we need to implement save() and load() ourselves.
 //
 // We first save the class ID to the config object so the
-// rviz::ToolManager will know what to instantiate when the config
+// rviz_common::ToolManager will know what to instantiate when the config
 // file is read back in.
 void WaypointNavTool::save(rviz_common::Config config) const
 {
@@ -477,11 +492,11 @@ void WaypointNavTool::save(rviz_common::Config config) const
 
   // To read the positions and names of the waypoints, we loop over the
   // the children of our Property container:
-  rviz::Property* container = getPropertyContainer();
+  rviz_common::Property* container = getPropertyContainer();
   int num_children = container->numChildren();
   for(int i = 0; i < num_children; i++)
   {
-    rviz::Property* position_prop = container->childAt(i);
+    rviz_common::Property* position_prop = container->childAt(i);
     // For each Property, we create a new Config object representing a
     // single waypoint and append it to the Config list.
     rviz_common::Config waypoint_config = waypoints_config.listAppendNew();
@@ -528,8 +543,8 @@ void WaypointNavTool::load(const rviz_common::Config& config)
     // were present it would return false, but we don't care about
     // that because we have already set a default.)
     waypoint_config.mapGetString("Name", &name);
-    // Given the name we can create an rviz::VectorProperty to display the position:
-    rviz::VectorProperty* prop = new rviz::VectorProperty(name);
+    // Given the name we can create an rviz_common::VectorProperty to display the position:
+    rviz_common::VectorProperty* prop = new rviz_common::VectorProperty(name);
     // Then we just tell the property to read its contents from the config, and we've read all the data.
     prop->load(waypoint_config);
     // We finish each waypoint by marking it read-only (as discussed

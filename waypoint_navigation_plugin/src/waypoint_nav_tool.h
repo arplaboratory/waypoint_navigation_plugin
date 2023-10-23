@@ -49,24 +49,45 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "rviz_common/render_panel.hpp"
+#include <OGRE/OgreVector3.h>
 
 #include "rviz_rendering/geometry.hpp"
+#include <thread>
 
+/*
+#include "rviz_common/render_panel.hpp"
+#include <rviz_common/display_context.hpp>
+#include "rviz_common/viewport_mouse_event.hpp"
+#include "rviz_common/properties/vector_property.hpp"
+#include <rviz_common/panel.hpp>
+
+
+**/
 using std::placeholders::_1;
 #include "waypoint_nav_frame.h"
 namespace Ogre
 {
 class SceneNode;
-class Vector3;
+//class Vector3;
 }
 
-namespace rviz
+namespace rviz_common::properties
 {
 class VectorProperty;
+}
+
+namespace rviz_common
+{
 class VisualizationManager;
 class ViewportMouseEvent;
 class PanelDockWidget;
+class render_panel;
+class display_context;
+class panel;
+class WindowManagerInterface;
 }
+
+
 
 namespace Ui
 {
@@ -94,6 +115,7 @@ public:
   virtual void load(const rviz_common::Config& config);
   virtual void save(rviz_common::Config config) const;
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
+  void spin();
 
 private:
   void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback &feedback);
@@ -105,18 +127,22 @@ private:
 
   // the waypoint nav Qt frame
   WaypointFrame *frame_;
-  rviz::PanelDockWidget* frame_dock_;
+  //
 
-  interactive_markers::InteractiveMarkerServer server_;
+  rviz_common::PanelDockWidget* frame_dock_;
+
+  interactive_markers::InteractiveMarkerServer * server_;
   interactive_markers::MenuHandler menu_handler_;
 
   //map that stores waypoints based on unique names
   typedef std::map<int, Ogre::SceneNode* > M_StringToSNPtr;
   M_StringToSNPtr sn_map_;
   rviz_common::properties::VectorProperty * current_flag_property_;
-
+  rclcpp::Node::SharedPtr nh_;
   //index used for creating unique marker names
-  int unique_ind_;
+  int unique_ind_; 
+  std::shared_ptr<std::thread>  thread_;
+  rclcpp::executors::StaticSingleThreadedExecutor exec_;
 };
 
 } // end namespace waypoint_nav_plugin

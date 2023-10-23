@@ -53,7 +53,7 @@
 #include <std_srvs/srv/empty.hpp>
 #include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
-
+#include <OGRE/OgreVector3.h>
 #include <visualization_msgs/msg/marker_array.hpp>
 //#include <mav_manager/Vec4.h>
 
@@ -71,12 +71,12 @@ static const std::string append[5] = { "Pos", "Vel", "accel", "jerk" , "snap"};
 namespace Ogre
 {
 class SceneNode;
-class Vector3;
+//class Vector3;
 class SceneManager;
 class Quaternion;
 }
 
-namespace rviz
+namespace rviz_common
 {
 class DisplayContext;
 }
@@ -105,7 +105,7 @@ class WaypointFrame : public QWidget
   Q_OBJECT
 
 public:
-  WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
+  WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
    interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent = 0, WaypointNavTool* wp_tool=0);
   ~WaypointFrame();
 
@@ -136,7 +136,7 @@ public:
 protected:
 
   Ui::WaypointNavigationWidget *ui_;
-  rviz::DisplayContext* context_;
+  rviz_common::DisplayContext* context_;
 
 private Q_SLOTS:
   void publishButtonClicked();
