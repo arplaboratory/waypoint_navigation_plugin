@@ -29,9 +29,10 @@
 
 /* Author: Dinesh Thakur - Modified for waypoint navigation */
 
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreEntity.h>
+//#include <OGRE/OgreSceneNode.h>
+//#include <OGRE/OgreSceneManager.h>
+//#include <OGRE/OgreEntity.h>
+#include <Ogre.h>
 
 #include "waypoint_nav_tool.hpp"
 #include <boost/bind.hpp>
@@ -74,31 +75,26 @@ void WaypointNavTool::onInitialize()
       flag_resource_.c_str());
     return;
   }
-  std::cout << "WE ARE CREATING SCENE" <<std::endl;
   moving_flag_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
-  std::cout << "created scene" <<std::endl;
 
   Ogre::Entity* entity = scene_manager_->createEntity(flag_resource_);
-  std::cout << "created entity " <<std::endl;
 
   moving_flag_node_->attachObject(entity);
-  std::cout << "attached entity " <<std::endl;
 
-  //moving_flag_node_->setVisible(false);
-  std::cout << "Set Visible " <<std::endl;
+  moving_flag_node_->setVisible(false);
 
   rviz_common::WindowManagerInterface* window_context = context_->getWindowManager();
   frame_ = new WaypointFrame(context_, &sn_map_, server_, &unique_ind_, NULL, this);
-  std::cout << "Created the frame " <<std::endl;
 
-  //if (window_context)
+  //if (window_context){
+  //  std::cout << " ADD PANEL " <<std::endl;
   //  frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
-
+  //}
   frame_->enable();
 
   //add Delete menu for interactive marker
- // menu_handler_.insert("Delete", boost::bind(&WaypointNavTool::processFeedback, this));
- // menu_handler_.insert("Set Manual", boost::bind(&WaypointNavTool::processFeedback, this));
+  menu_handler_.insert("Delete", std::bind(&WaypointNavTool::processFeedback, this , std::placeholders::_1));
+  menu_handler_.insert("Set Manual", std::bind(&WaypointNavTool::processFeedback, this,  std::placeholders::_1));
 }
 
 // Activation and deactivation
@@ -120,13 +116,8 @@ void WaypointNavTool::onInitialize()
 // is left as an exercise for the reader.
 void WaypointNavTool::activate()
 {
-  if(moving_flag_node_)
-  {
-    moving_flag_node_->setVisible(true);
-    current_flag_property_ = new rviz_common::properties::VectorProperty(
-      "Flag " + QString::number(sn_map_.size()));
-    current_flag_property_->setReadOnly(true);
-    getPropertyContainer()->addChild(current_flag_property_);
+  std::cout << " ACTIVATE START " <<std::endl;
+  if(first_time_){
     server_ = new interactive_markers::InteractiveMarkerServer("waypoint", 
     nh_->get_node_base_interface(),
     nh_->get_node_clock_interface(),
@@ -135,9 +126,18 @@ void WaypointNavTool::activate()
     nh_->get_node_services_interface());
     thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
   }
+  if(moving_flag_node_)
+  {
+    moving_flag_node_->setVisible(true);
+    current_flag_property_ = new rviz_common::properties::VectorProperty(
+      "Flag " + QString::number(sn_map_.size()));
+    current_flag_property_->setReadOnly(true);
+    first_time_ = false;
+    getPropertyContainer()->addChild(current_flag_property_);
+  }
 }
 
-
+//Spin the ROS NODE
  void WaypointNavTool::spin()
  {
     exec_.add_node(nh_);
@@ -145,6 +145,7 @@ void WaypointNavTool::activate()
        exec_.spin();
     }
  }
+
 // deactivate() is called when the tool is being turned off because
 // another tool has been chosen.
 //
@@ -157,7 +158,7 @@ void WaypointNavTool::deactivate()
 {
   if(moving_flag_node_)
   {
-//    moving_flag_node_->setVisible(false);
+    moving_flag_node_->setVisible(false);
     delete current_flag_property_;
     current_flag_property_ = NULL;
   }
@@ -196,7 +197,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
 
         if(distance < 0.4)
         {
-      //    moving_flag_node_->setVisible(false);
+          moving_flag_node_->setVisible(false);
 
           //delete the waypoint if right clicked
           if(event.rightDown())
@@ -223,7 +224,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
     }
     }
     else{
-  //    moving_flag_node_->setVisible(false);
+      moving_flag_node_->setVisible(false);
     }
   return Render;
 }
@@ -489,30 +490,6 @@ void WaypointNavTool::save(rviz_common::Config config) const
   waypoints_config.mapSetValue("topic", frame_->getOutputTopic());
   waypoints_config.mapSetValue("frame_id", frame_->getFrameId());
   waypoints_config.mapSetValue("default_height", frame_->getDefaultHeight());
-
-  /*
-  // The top level of this tool's Config is a map, but our waypoints
-  // should go in a list, since they may or may not have unique keys.
-  // Therefore we make a child of the map (``waypoints_config``) to store
-  // the list.
-  rviz_common::Config waypoints_config = config.mapMakeChild("Waypoints");
-
-  // To read the positions and names of the waypoints, we loop over the
-  // the children of our Property container:
-  rviz_common::Property* container = getPropertyContainer();
-  int num_children = container->numChildren();
-  for(int i = 0; i < num_children; i++)
-  {
-    rviz_common::Property* position_prop = container->childAt(i);
-    // For each Property, we create a new Config object representing a
-    // single waypoint and append it to the Config list.
-    rviz_common::Config waypoint_config = waypoints_config.listAppendNew();
-    // Into the waypoint's config we store its name:
-    waypoint_config.mapSetValue("Name", position_prop->getName());
-    // ... and its position.
-    position_prop->save(waypoint_config);
-  }
-  */
 }
 
 // In a tool's load() function, we don't need to read its class
@@ -533,35 +510,6 @@ void WaypointNavTool::load(const rviz_common::Config& config)
   waypoints_config.mapGetFloat("default_height", &height);
 
   frame_->setConfig(topic, frame, height);
-
-/*
-  // Here we get the "waypoints" sub-config from the tool config and loop over its entries:
-  rviz_common::Config waypoints_config = config.mapGetChild("waypoints");
-  int num_waypoints = waypoints_config.listLength();
-  for(int i = 0; i < num_waypoints; i++)
-  {
-    rviz_common::Config waypoint_config = waypoints_config.listChildAt(i);
-    // At this point each ``waypoint_config`` represents a single waypoint.
-    //
-    // Here we provide a default name in case the name is not in the config file for some reason:
-    QString name = "waypoint " + QString::number(i + 1);
-    // Then we use the convenience function mapGetString() to read the
-    // name from ``waypoint_config`` if it is there.  (If no "Name" entry
-    // were present it would return false, but we don't care about
-    // that because we have already set a default.)
-    waypoint_config.mapGetString("Name", &name);
-    // Given the name we can create an rviz_common::VectorProperty to display the position:
-    rviz_common::VectorProperty* prop = new rviz_common::VectorProperty(name);
-    // Then we just tell the property to read its contents from the config, and we've read all the data.
-    prop->load(waypoint_config);
-    // We finish each waypoint by marking it read-only (as discussed
-    // above), adding it to the property container, and finally making
-    // an actual visible waypoint object in the 3D scene at the correct
-    // position.
-    prop->setReadOnly(true);
-    getPropertyContainer()->addChild(prop);
-    //makewaypoint(prop->getVector());
-  }*/
 }
 
 } // end namespace

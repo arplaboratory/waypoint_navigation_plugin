@@ -128,7 +128,7 @@ private:
   // the waypoint nav Qt frame
   WaypointFrame *frame_;
   //
-
+  bool first_time_ = true;
   rviz_common::PanelDockWidget* frame_dock_;
 
   interactive_markers::InteractiveMarkerServer * server_;
