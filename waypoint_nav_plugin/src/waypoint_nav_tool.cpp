@@ -134,7 +134,7 @@ void WaypointNavTool::activate()
  {
     exec_.add_node(nh_);
     while(rclcpp::ok()){
-       exec_.spin_some();
+       exec_.spin();
     }
  }
 // deactivate() is called when the tool is being turned off because
