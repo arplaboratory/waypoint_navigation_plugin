@@ -125,15 +125,15 @@ void WaypointNavTool::activate()
     nh_->get_node_topics_interface(),
     nh_->get_node_services_interface());
     thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
+    first_time_ = false;
   }
   if(moving_flag_node_)
   {
     moving_flag_node_->setVisible(true);
-    current_flag_property_ = new rviz_common::properties::VectorProperty(
-      "Flag " + QString::number(sn_map_.size()));
-    current_flag_property_->setReadOnly(true);
-    first_time_ = false;
+    /*current_flag_property_ = new rviz_common::properties::VectorProperty(
+      "waypoint" + QString::number(sn_map_.size()+1));
     getPropertyContainer()->addChild(current_flag_property_);
+    server_->applyChanges();*/
   }
 }
 
@@ -355,7 +355,7 @@ void WaypointNavTool::processFeedback(
           //Delete selected waypoint
           std::stringstream wp_name;
           wp_name << "waypoint" << sn_entry->first;  
-
+          
           std::string wp_name_str(wp_name.str());
           server_->erase(wp_name_str);
 

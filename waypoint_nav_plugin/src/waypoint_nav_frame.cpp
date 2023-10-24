@@ -500,12 +500,14 @@ void WaypointFrame::poseChanged(double val)
     sn_entry->second->setOrientation(quat);
 
     std::stringstream wp_name;
-    wp_name << "waypoint" << sn_entry->first;
     std::string wp_name_str(wp_name.str());
-
+    std::cout <<" WAYPOINT " <<std::endl;
     visualization_msgs::msg::InteractiveMarker int_marker;
-    if(server_->get(wp_name_str, int_marker))
+    std::cout <<" get start " <<std::endl;
+
+    if(!server_->get(wp_name_str, int_marker))
     {
+
       int_marker.pose.position.x = position.x;
       int_marker.pose.position.y = position.y;
       int_marker.pose.position.z = position.z;
@@ -517,6 +519,7 @@ void WaypointFrame::poseChanged(double val)
 
       server_->setPose(wp_name_str, int_marker.pose, int_marker.header);
     }
+    std::cout << " SERVER Set" <<std::endl;
     server_->applyChanges();
   }
 }
@@ -724,7 +727,6 @@ void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
 
   double  yaw = atan2(2.0*(quat.y*quat.z + quat.w*quat.x), 
   quat.w*quat.w - quat.x*quat.x - quat.y*quat.y + quat.z*quat.z);
-  //tf::Quaternion qt(quat.x, quat.y, quat.z, quat.w);
   ui_->yaw_doubleSpinBox->setValue(yaw);
 
   //enable the signals
