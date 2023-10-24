@@ -51,7 +51,8 @@
 namespace waypoint_nav_plugin
 {
 
-WaypointFrame::WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr, interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent, WaypointNavTool* wp_tool)
+WaypointFrame::WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr, 
+interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent, WaypointNavTool* wp_tool)
   : QWidget(parent)
   , context_(context)
   , ui_(new Ui::WaypointNavigationWidget())
@@ -839,17 +840,8 @@ void WaypointFrame::motors_on_push_button(){
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = true;
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-        if (result.get()->success)
-        {
-            RCLCPP_INFO(node->get_logger(), "Land succeeded");
-        }
-        else
-        {
-            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
-        }
-    }	
+    RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 }
 
 void WaypointFrame::motors_off_push_button(){
@@ -858,17 +850,8 @@ void WaypointFrame::motors_off_push_button(){
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = false;
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-        if (result.get()->success)
-        {
-            RCLCPP_INFO(node->get_logger(), "Land succeeded");
-        }
-        else
-        {
-            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
-        }
-    }	
+    RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 }
 
 void WaypointFrame::hover_push_button(){
@@ -877,17 +860,8 @@ void WaypointFrame::hover_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-        if (result.get()->success)
-        {
-            RCLCPP_INFO(node->get_logger(), "Land succeeded");
-        }
-        else
-        {
-            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
-        }
-    }	
+    RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 }
 
 void WaypointFrame::land_push_button(){
@@ -896,17 +870,8 @@ void WaypointFrame::land_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-        if (result.get()->success)
-        {
-            RCLCPP_INFO(node->get_logger(), "Land succeeded");
-        }
-        else
-        {
-            RCLCPP_ERROR(node->get_logger(), "Land failed: %s", result.get()->message.c_str());
-        }
-    }	
+    RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 }
 
 void WaypointFrame::takeoff_push_button(){
@@ -916,17 +881,8 @@ void WaypointFrame::takeoff_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS)
-    {
-        if (result.get()->success)
-        {
-            RCLCPP_INFO(node->get_logger(), "Takeoff succeeded");
-        }
-        else
-        {
-            RCLCPP_ERROR(node->get_logger(), "Takeoff failed: %s", result.get()->message.c_str());
-        }
-    }
+      RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 }
 
 void WaypointFrame::goto_push_button(){

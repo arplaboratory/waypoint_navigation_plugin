@@ -74,14 +74,22 @@ void WaypointNavTool::onInitialize()
       flag_resource_.c_str());
     return;
   }
-
+  std::cout << "WE ARE CREATING SCENE" <<std::endl;
   moving_flag_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
+  std::cout << "created scene" <<std::endl;
+
   Ogre::Entity* entity = scene_manager_->createEntity(flag_resource_);
+  std::cout << "created entity " <<std::endl;
+
   moving_flag_node_->attachObject(entity);
-  moving_flag_node_->setVisible(false);
+  std::cout << "attached entity " <<std::endl;
+
+  //moving_flag_node_->setVisible(false);
+  std::cout << "Set Visible " <<std::endl;
 
   rviz_common::WindowManagerInterface* window_context = context_->getWindowManager();
   frame_ = new WaypointFrame(context_, &sn_map_, server_, &unique_ind_, NULL, this);
+  std::cout << "Created the frame " <<std::endl;
 
   //if (window_context)
   //  frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
@@ -149,7 +157,7 @@ void WaypointNavTool::deactivate()
 {
   if(moving_flag_node_)
   {
-    moving_flag_node_->setVisible(false);
+//    moving_flag_node_->setVisible(false);
     delete current_flag_property_;
     current_flag_property_ = NULL;
   }
@@ -188,7 +196,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
 
         if(distance < 0.4)
         {
-          moving_flag_node_->setVisible(false);
+      //    moving_flag_node_->setVisible(false);
 
           //delete the waypoint if right clicked
           if(event.rightDown())
@@ -215,7 +223,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
     }
     }
     else{
-      moving_flag_node_->setVisible(false);
+  //    moving_flag_node_->setVisible(false);
     }
   return Render;
 }
