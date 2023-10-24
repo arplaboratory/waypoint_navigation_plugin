@@ -118,7 +118,7 @@ public:
   void spin();
 
 private:
-  void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback &feedback);
+  void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback);
   void getMarkerPoses();
   void clearAllWaypoints();
 

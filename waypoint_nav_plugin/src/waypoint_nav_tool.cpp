@@ -319,8 +319,8 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     int_marker.controls.push_back(control);
 
     server_->insert(int_marker);
-    //server_->setCallback(int_marker.name,
-    // boost::bind(&WaypointNavTool::processFeedback, this));
+    server_->setCallback(int_marker.name,
+    	std::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
     menu_handler_.apply(*server_, int_marker.name);
 
     //Set the current marker as selected
@@ -334,22 +334,22 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 }
 
 void WaypointNavTool::processFeedback(
-      const visualization_msgs::msg::InteractiveMarkerFeedback &feedback)
+      const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback)
 {
-  switch (feedback.event_type)
+  switch (feedback->event_type)
   {
     case visualization_msgs::msg::InteractiveMarkerFeedback::MENU_SELECT:
     {
 
      M_StringToSNPtr::iterator sn_entry =
-        sn_map_.find(std::stoi(feedback.marker_name.substr(8)));
+        sn_map_.find(std::stoi(feedback->marker_name.substr(8)));
       if (sn_entry == sn_map_.end())
-        std::cout << feedback.marker_name.c_str() <<  "not found in map" <<std::endl;
+        std::cout << feedback->marker_name.c_str() <<  "not found in map" <<std::endl;
        // ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
       else
       {
 
-        if(feedback.menu_entry_id == 1)
+        if(feedback->menu_entry_id == 1)
         {
           //Delete selected waypoint
           std::stringstream wp_name;
@@ -390,7 +390,7 @@ void WaypointNavTool::processFeedback(
 
           frame_->setWpLabel(position);
 
-          server_->setPose(feedback.marker_name, pos);
+          server_->setPose(feedback->marker_name, pos);
           server_->applyChanges();
         }
       }
@@ -398,15 +398,15 @@ void WaypointNavTool::processFeedback(
       break;
     case visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE:
     {
-      M_StringToSNPtr::iterator sn_entry = sn_map_.find(std::stoi(feedback.marker_name.substr(8)));
+      M_StringToSNPtr::iterator sn_entry = sn_map_.find(std::stoi(feedback->marker_name.substr(8)));
 
       if (sn_entry == sn_map_.end())
-        std::cout << feedback.marker_name.c_str() <<  "not found in map" <<std::endl;
+        std::cout << feedback->marker_name.c_str() <<  "not found in map" <<std::endl;
         //ROS_ERROR("%s not found in map", feedback->marker_name.c_str());
       else
       {
         geometry_msgs::msg::PoseStamped pos;
-        pos.pose = feedback.pose;   
+        pos.pose = feedback->pose;   
 
         Ogre::Vector3 position;
         position.x = pos.pose.position.x;
@@ -425,8 +425,8 @@ void WaypointNavTool::processFeedback(
 
         frame_->setWpLabel(position);
         frame_->setPose(position, quat);
-        frame_->setSelectedMarkerName(feedback.marker_name);
-        waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback.marker_name.substr(8))-1];
+        frame_->setSelectedMarkerName(feedback->marker_name);
+        waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
         frame_->setLimit(ineq.upper,ineq.lower,ineq.enable);
       }
     }
