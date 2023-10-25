@@ -130,11 +130,13 @@ void WaypointNavTool::activate()
   if(moving_flag_node_)
   {
     moving_flag_node_->setVisible(true);
+
     /*current_flag_property_ = new rviz_common::properties::VectorProperty(
       "waypoint" + QString::number(sn_map_.size()+1));
     getPropertyContainer()->addChild(current_flag_property_);
     server_->applyChanges();*/
   }
+  server_->applyChanges();
 }
 
 //Spin the ROS NODE
@@ -173,7 +175,6 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
   {
     return Render;
   }
-
   double height = frame_->getDefaultHeight();
   Ogre::Quaternion quat;
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, height);
@@ -278,8 +279,9 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 
     visualization_msgs::msg::InteractiveMarker int_marker;
     //int_marker.header.stamp = ros::Time::now();
-    int_marker.header.frame_id = frame_->getFrameId().toStdString();
 
+    int_marker.header.frame_id = "world";
+    //std::cout << " WE ARE IN FRAME ID " << int_marker.header.frame_id <<std::endl;
     int_marker.pose = pos.pose;
     int_marker.scale = 2;
     int_marker.name = wp_name_str;
@@ -505,7 +507,7 @@ void WaypointNavTool::load(const rviz_common::Config& config)
     topic = "/waypoints";
 
   if(!waypoints_config.mapGetString("frame_id", &frame))
-    frame = "/map";
+    frame = "world";
 
   waypoints_config.mapGetFloat("default_height", &height);
 
