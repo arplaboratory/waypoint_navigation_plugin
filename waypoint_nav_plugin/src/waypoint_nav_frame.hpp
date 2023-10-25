@@ -108,6 +108,7 @@ public:
   WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
    interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent = 0, WaypointNavTool* wp_tool=0);
   ~WaypointFrame();
+  interactive_markers::InteractiveMarkerServer* server_;
 
   void enable();
   void disable();
@@ -208,7 +209,6 @@ private:
   Ogre::SceneManager* scene_manager_;
   int* unique_ind_;
 
-  interactive_markers::InteractiveMarkerServer* server_;
 
   //default height the waypoint must be placed at
   double default_height_;

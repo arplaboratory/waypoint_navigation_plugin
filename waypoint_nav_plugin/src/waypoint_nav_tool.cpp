@@ -125,6 +125,7 @@ void WaypointNavTool::activate()
     nh_->get_node_topics_interface(),
     nh_->get_node_services_interface());
     thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
+    frame_->server_ = server_;
     first_time_ = false;
   }
   if(moving_flag_node_)
@@ -429,8 +430,8 @@ void WaypointNavTool::processFeedback(
         frame_->setWpLabel(position);
         frame_->setPose(position, quat);
         frame_->setSelectedMarkerName(feedback->marker_name);
-        waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
-        frame_->setLimit(ineq.upper,ineq.lower,ineq.enable);
+        //waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
+        //frame_->setLimit(ineq.upper,ineq.lower,ineq.enable);
       }
     }
      break;

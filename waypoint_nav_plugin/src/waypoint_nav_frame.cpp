@@ -498,14 +498,25 @@ void WaypointFrame::poseChanged(double val)
 
     sn_entry->second->setPosition(position);
     sn_entry->second->setOrientation(quat);
+    geometry_msgs::msg::Pose pos;
+    pos.position.x = position.x;
+    pos.position.y = position.y;
+    pos.position.z = position.z;
+
+    pos.orientation.x = quat.x;
+    pos.orientation.y = quat.y;
+    pos.orientation.z = quat.z;
+    pos.orientation.w = quat.w;
 
     std::stringstream wp_name;
     std::string wp_name_str(wp_name.str());
     std::cout <<" WAYPOINT " <<std::endl;
     visualization_msgs::msg::InteractiveMarker int_marker;
     std::cout <<" get start " <<std::endl;
+    server_->setPose(wp_name_str, pos);
+    std::cout <<" set pose " <<std::endl;
 
-    if(!server_->get(wp_name_str, int_marker))
+    /*if(!server_->get(wp_name_str, int_marker))
     {
 
       int_marker.pose.position.x = position.x;
@@ -518,7 +529,7 @@ void WaypointFrame::poseChanged(double val)
       int_marker.pose.orientation.w = quat.w;
 
       server_->setPose(wp_name_str, int_marker.pose, int_marker.header);
-    }
+    }*/
     std::cout << " SERVER Set" <<std::endl;
     server_->applyChanges();
   }
