@@ -95,6 +95,15 @@ void WaypointNavTool::onInitialize()
   //add Delete menu for interactive marker
   menu_handler_.insert("Delete", std::bind(&WaypointNavTool::processFeedback, this , std::placeholders::_1));
   menu_handler_.insert("Set Manual", std::bind(&WaypointNavTool::processFeedback, this,  std::placeholders::_1));
+    server_ = new interactive_markers::InteractiveMarkerServer("waypoint", 
+    nh_->get_node_base_interface(),
+    nh_->get_node_clock_interface(),
+    nh_->get_node_logging_interface(),
+    nh_->get_node_topics_interface(),
+    nh_->get_node_services_interface());
+    thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
+    frame_->server_ = server_;
+    first_time_ = false;
 }
 
 // Activation and deactivation
@@ -117,17 +126,6 @@ void WaypointNavTool::onInitialize()
 void WaypointNavTool::activate()
 {
   std::cout << " ACTIVATE START " <<std::endl;
-  if(first_time_){
-    server_ = new interactive_markers::InteractiveMarkerServer("waypoint", 
-    nh_->get_node_base_interface(),
-    nh_->get_node_clock_interface(),
-    nh_->get_node_logging_interface(),
-    nh_->get_node_topics_interface(),
-    nh_->get_node_services_interface());
-    thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
-    frame_->server_ = server_;
-    first_time_ = false;
-  }
   if(moving_flag_node_)
   {
     moving_flag_node_->setVisible(true);
