@@ -509,6 +509,7 @@ void WaypointFrame::poseChanged(double val)
     pos.orientation.w = quat.w;
 
     std::stringstream wp_name;
+    wp_name << "waypoint" << sn_entry->first;
     std::string wp_name_str(wp_name.str());
     std::cout <<" WAYPOINT " <<std::endl;
     visualization_msgs::msg::InteractiveMarker int_marker;
