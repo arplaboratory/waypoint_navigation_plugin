@@ -159,30 +159,23 @@ void WaypointFrame::bern_enable(int b)
 void WaypointFrame::saveButtonClicked()
 {
 
-  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*.bag)"));
-
- /* if(filename == "")
-    ROS_ERROR("No filename selected");
-  else
+  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*)"));
+   if(filename == "")
+   std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
+   else
   {
     QFileInfo info(filename);
-    std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".bag";
+    std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString();
     std::cout << "saving waypoints to " << filn.c_str() <<std::endl;
     //ROS_INFO("saving waypoints to %s", filn.c_str());
-
-    rosbag::Bag bag;
-    try{
-      bag.open(filn, rosbag::bagmode::Write);
-    }
-    catch(rosbag::BagIOException e)
-    {
-      std::cout << "could not open bag " << filn.c_str() <<std::endl;
-      //ROS_ERROR("could not open bag %s", filn.c_str());
-      return;
-    }
-
+    std::unique_ptr<rosbag2_cpp::Writer> writer_ = std::make_unique<rosbag2_cpp::Writer>();
+    writer_->open(filn);
+    writer_->create_topic(
+      {"waypoints",
+      "nav_msgs/msg/Path",
+      rmw_get_serialization_format(),
+      ""});
     nav_msgs::msg::Path path;
-
     std::map<int, Ogre::SceneNode* >::iterator sn_it;
     for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
     {
@@ -203,52 +196,36 @@ void WaypointFrame::saveButtonClicked()
 
       path.poses.push_back(pos);
     }
-
     path.header.frame_id = frame_id_.toStdString();
-
-    bag.write("waypoints", ros::Time::now(), path);
-    bag.close();
-  }*/
+    
+    writer_->write(path, "waypoints", node->now());
+  }
 }
 
 void WaypointFrame::loadButtonClicked()
 {
-  QString filename = QFileDialog::getOpenFileName(0,tr("Open Bag"), "~/", tr("Bag Files (*.bag)"));
-  /*
+  QString filename = QFileDialog::getExistingDirectory(0,"/home");
   if(filename == "")
-    ROS_ERROR("No filename selected");
+   std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
   else
   {
     //Clear existing waypoints
     clearAllWaypoints();
-
     std::string filn = filename.toStdString();
-    ROS_INFO("loading waypoints from %s", filn.c_str());
-
-    rosbag::Bag bag;
-    try{
-      bag.open(filn, rosbag::bagmode::Read);
-    }
-    catch(rosbag::BagIOException e)
-    {
-      ROS_ERROR("could not open bag %s", filn.c_str());
-      return;
-    }
-
-    std::vector<std::string> topics;
-    topics.push_back(std::string("waypoints"));
-    rosbag::View view(bag, rosbag::TopicQuery(topics));
-
-    foreach(rosbag::MessageInstance const m, view)
-    {
-      nav_msgs::Path::ConstPtr p = m.instantiate<nav_msgs::Path>();
-      if (p != NULL)
-      {
-        ROS_INFO("n waypoints %d", p->poses.size());
-
-        for(int i = 0; i < p->poses.size(); i++)
+    std::cout << " loading waypoints from " << filn <<std::endl;
+    rosbag2_cpp::Reader reader_;
+    reader_.open(filn);
+    while (reader_.has_next()) {
+      rosbag2_storage::SerializedBagMessageSharedPtr msg = reader_.read_next();
+      if (msg->topic_name == "waypoints") {
+        rclcpp::SerializedMessage serialized_msg(*msg->serialized_data);
+        nav_msgs::msg::Path ros_msg;
+        serialization_.deserialize_message(&serialized_msg, &ros_msg);
+        std::cout <<" ROS MESSAGE " << ros_msg.poses.size() <<std::endl;
+        for(int i = 0; i < ros_msg.poses.size(); i++)
         {
-          geometry_msgs::PoseStamped pos = p->poses[i];
+
+          geometry_msgs::msg::PoseStamped pos = ros_msg.poses[i];
           Ogre::Vector3 position;
           position.x = pos.pose.position.x;
           position.y = pos.pose.position.y;
@@ -264,7 +241,7 @@ void WaypointFrame::loadButtonClicked()
         }
       }
     }
-  }*/
+  }
 }
 
 
@@ -409,7 +386,6 @@ void WaypointFrame::perchClicked()
 
 void WaypointFrame::clearAllWaypoints()
 {
-  /*
   //destroy the ogre scene nodes
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
@@ -423,7 +399,7 @@ void WaypointFrame::clearAllWaypoints()
 
   //clear the interactive markers
   server_->clear();
-  server_->applyChanges();*/
+  server_->applyChanges();
 }
 
 void WaypointFrame::heightChanged(double h)

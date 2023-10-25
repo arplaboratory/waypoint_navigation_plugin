@@ -56,6 +56,8 @@
 #include <OGRE/OgreVector3.h>
 #include <visualization_msgs/msg/marker_array.hpp>
 //#include <mav_manager/Vec4.h>
+#include <rosbag2_cpp/writer.hpp>
+#include <rosbag2_cpp/reader.hpp>
 
 
 
@@ -202,7 +204,7 @@ private:
 
  // void display(const nav_msgs::msg::Path &msg, int index);
 
-
+  rclcpp::Serialization<nav_msgs::msg::Path> serialization_;
   WaypointNavTool* wp_nav_tool_;
   //pointers passed via contructor
   std::map<int, Ogre::SceneNode* >* sn_map_ptr_;

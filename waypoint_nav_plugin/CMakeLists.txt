@@ -21,6 +21,8 @@ find_package(pluginlib REQUIRED)
 find_package(rviz_common REQUIRED)
 find_package(rviz_default_plugins REQUIRED)
 find_package(rviz_rendering REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+
 find_package(rviz_ogre_vendor REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosbag2 REQUIRED)
@@ -33,6 +35,7 @@ set(dependencies
   Qt5
   rviz2
   rviz_common
+  rosbag2_cpp
   rviz_default_plugins
   rviz_rendering
   rviz_ogre_vendor
