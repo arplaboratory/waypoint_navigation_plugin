@@ -59,7 +59,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   , sn_map_ptr_(map_ptr)
   , unique_ind_(unique_ind)
   , server_(server)
-  , frame_id_("/map")
+  , frame_id_("world")
   , default_height_(0.0)
   , selected_marker_name_("waypoint1")
   , wp_nav_tool_(wp_tool)
@@ -203,9 +203,9 @@ void WaypointFrame::saveButtonClicked()
 }
 
 void WaypointFrame::loadButtonClicked()
-{/*
+{
   QString filename = QFileDialog::getExistingDirectory(0,"/home");
-  if(filename == "")
+  /*if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
   else
   {
@@ -214,7 +214,11 @@ void WaypointFrame::loadButtonClicked()
     std::string filn = filename.toStdString();
     std::cout << " loading waypoints from " << filn <<std::endl;
     rosbag2_cpp::Reader reader_;
-    reader_.open(filn);
+    rosbag2_cpp::StorageOptions storage_options;
+    storage_options.uri = filn;
+    rosbag2_cpp::ConverterOptions converter_options{};
+    reader_.open(storage_options, converter_options);
+    //reader_.open(filn);
     while (reader_.has_next()) {
       rosbag2_storage::SerializedBagMessageSharedPtr msg = reader_.read_next();
       if (msg->topic_name == "waypoints") {
