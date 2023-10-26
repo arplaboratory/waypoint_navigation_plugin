@@ -88,7 +88,7 @@ void WaypointNavTool::onInitialize()
 
   //if (window_context){
   //  std::cout << " ADD PANEL " <<std::endl;
-  //  frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
+  frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
   //}
   frame_->enable();
 

@@ -53,7 +53,7 @@
 
 #include "rviz_rendering/geometry.hpp"
 #include <thread>
-
+#include "rviz_common/window_manager_interface.hpp"
 /*
 #include "rviz_common/render_panel.hpp"
 #include <rviz_common/display_context.hpp>
