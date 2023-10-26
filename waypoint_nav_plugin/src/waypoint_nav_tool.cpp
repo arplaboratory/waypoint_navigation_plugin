@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Author: Dinesh Thakur - Modified for waypoint navigation */
+/* Author: JEFFREY MAO - MODIFIED TO ROS2 */
 
 //#include <OGRE/OgreSceneNode.h>
 //#include <OGRE/OgreSceneManager.h>

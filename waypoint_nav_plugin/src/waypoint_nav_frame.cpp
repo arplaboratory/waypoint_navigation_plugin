@@ -33,14 +33,14 @@
  *********************************************************************/
 
 /* Author: Ioan Sucan */
-/* Author: Dinesh Thakur - Modified for waypoint navigation */
+/* Author: JEFFREY MAO - MODIFIED TO ROS2 */
 
 #include <OGRE/OgreSceneManager.h>
 //#include <rviz/display_context.h>
 #include <interactive_markers/interactive_marker_server.hpp>
 //#include <rosbag/bag.h>
 //#include <rosbag/view.h>
-
+#include <fstream>
 #include "waypoint_nav_tool.hpp"
 //#include "waypoint_nav_frame.h"
 
@@ -158,54 +158,43 @@ void WaypointFrame::bern_enable(int b)
 
 void WaypointFrame::saveButtonClicked()
 {
-/*
-  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*)"));
+  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*.txt)"));
    if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
    else
   {
     QFileInfo info(filename);
-    std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString();
-    std::cout << "saving waypoints to " << filn.c_str() <<std::endl;
-    //ROS_INFO("saving waypoints to %s", filn.c_str());
-    std::unique_ptr<rosbag2_cpp::Writer> writer_ = std::make_unique<rosbag2_cpp::Writer>();
-    writer_->open(filn);
-    writer_->create_topic(
-      {"waypoints",
-      "nav_msgs/msg/Path",
-      rmw_get_serialization_format(),
-      ""});
-    nav_msgs::msg::Path path;
-    std::map<int, Ogre::SceneNode* >::iterator sn_it;
-    for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
-    {
-      Ogre::Vector3 position;
-      position = sn_it->second->getPosition();
-
-      geometry_msgs::msg::PoseStamped pos;
-      pos.pose.position.x = position.x;
-      pos.pose.position.y = position.y;
-      pos.pose.position.z = position.z;
-
-      Ogre::Quaternion quat;
-      quat = sn_it->second->getOrientation();
-      pos.pose.orientation.x = quat.x;
-      pos.pose.orientation.y = quat.y;
-      pos.pose.orientation.z = quat.z;
-      pos.pose.orientation.w = quat.w;
-
-      path.poses.push_back(pos);
-    }
-    path.header.frame_id = frame_id_.toStdString();
-    
-    writer_->write(path, "waypoints", node->now());
-  }*/
+    std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
+    std::ofstream outputFile(filn);
+    if (outputFile.is_open()) {
+      outputFile << sn_map_ptr_->size() << std::endl;
+      std::map<int, Ogre::SceneNode* >::iterator sn_it;
+      for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
+      {
+        
+        Ogre::Vector3 position;
+        position = sn_it->second->getPosition();
+        outputFile << position.x << std::endl;
+        outputFile << position.y << std::endl;
+        outputFile << position.z << std::endl;
+        Ogre::Quaternion quat;
+        quat = sn_it->second->getOrientation();        
+        outputFile << quat.x << std::endl;
+        outputFile << quat.y << std::endl;
+        outputFile << quat.z << std::endl;
+        outputFile << quat.w << std::endl;
+      }
+      outputFile.close(); // Close the file when you're done with it.
+    } else {
+        std::cout << "Failed to open the file!" << std::endl;
+    }    
+  }
 }
 
 void WaypointFrame::loadButtonClicked()
 {
-  QString filename = QFileDialog::getExistingDirectory(0,"/home");
-  /*if(filename == "")
+  QString filename = QFileDialog::getOpenFileName(0,tr("Open Bag"), "~/", tr("Bag Files (*.txt)"));
+  if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
   else
   {
@@ -213,39 +202,35 @@ void WaypointFrame::loadButtonClicked()
     clearAllWaypoints();
     std::string filn = filename.toStdString();
     std::cout << " loading waypoints from " << filn <<std::endl;
-    rosbag2_cpp::Reader reader_;
-    rosbag2_cpp::StorageOptions storage_options;
-    storage_options.uri = filn;
-    rosbag2_cpp::ConverterOptions converter_options{};
-    reader_.open(storage_options, converter_options);
-    //reader_.open(filn);
-    while (reader_.has_next()) {
-      rosbag2_storage::SerializedBagMessageSharedPtr msg = reader_.read_next();
-      if (msg->topic_name == "waypoints") {
-        rclcpp::SerializedMessage serialized_msg(*msg->serialized_data);
-        nav_msgs::msg::Path ros_msg;
-        serialization_.deserialize_message(&serialized_msg, &ros_msg);
-        std::cout <<" ROS MESSAGE " << ros_msg.poses.size() <<std::endl;
-        for(int i = 0; i < ros_msg.poses.size(); i++)
-        {
-
-          geometry_msgs::msg::PoseStamped pos = ros_msg.poses[i];
-          Ogre::Vector3 position;
-          position.x = pos.pose.position.x;
-          position.y = pos.pose.position.y;
-          position.z = pos.pose.position.z;
-
-          Ogre::Quaternion quat;
-          quat.x = pos.pose.orientation.x;
-          quat.y = pos.pose.orientation.y;
-          quat.z = pos.pose.orientation.z;
-          quat.w = pos.pose.orientation.w;
-
-          wp_nav_tool_->makeIm(position, quat);
-        }
+    std::ifstream inputFile(filn);
+    if (inputFile.is_open()) {
+      std::string line;
+      std::getline(inputFile, line);
+      int numPoints = std::stoi(line);
+      for(int i =0;i<numPoints;i++){
+        std::getline(inputFile, line);
+        Ogre::Vector3 position;
+        position.x = std::stof(line);
+        std::getline(inputFile, line);
+        position.y = std::stof(line);
+        std::getline(inputFile, line);
+        position.z = std::stof(line);
+        Ogre::Quaternion quat;
+        std::getline(inputFile, line);
+        quat.x = std::stof(line);
+        std::getline(inputFile, line);
+        quat.y = std::stof(line);
+        std::getline(inputFile, line);
+        quat.z = std::stof(line);
+        std::getline(inputFile, line);
+        quat.w = std::stof(line);
+        wp_nav_tool_->makeIm(position, quat);
       }
+      inputFile.close();
+    } else {
+        std::cerr << "Failed to open the file!" << std::endl;
     }
-  }*/
+  }
 }
 
 
