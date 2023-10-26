@@ -158,7 +158,7 @@ void WaypointFrame::bern_enable(int b)
 
 void WaypointFrame::saveButtonClicked()
 {
-
+/*
   QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*)"));
    if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
@@ -199,11 +199,11 @@ void WaypointFrame::saveButtonClicked()
     path.header.frame_id = frame_id_.toStdString();
     
     writer_->write(path, "waypoints", node->now());
-  }
+  }*/
 }
 
 void WaypointFrame::loadButtonClicked()
-{
+{/*
   QString filename = QFileDialog::getExistingDirectory(0,"/home");
   if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
@@ -241,7 +241,7 @@ void WaypointFrame::loadButtonClicked()
         }
       }
     }
-  }
+  }*/
 }
 
 
