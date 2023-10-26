@@ -58,7 +58,8 @@
 //#include <mav_manager/Vec4.h>
 #include <rosbag2_cpp/writer.hpp>
 #include <rosbag2_cpp/reader.hpp>
-
+#include <rclcpp/serialization.hpp>
+#include <rosbag2_cpp/storage_options.hpp>
 
 
 typedef struct {
