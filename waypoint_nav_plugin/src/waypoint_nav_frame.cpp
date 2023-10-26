@@ -388,18 +388,25 @@ void WaypointFrame::clearAllWaypoints()
 {
   //destroy the ogre scene nodes
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
-  for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
+  while (sn_map_ptr_->size()>0)
   {
-    scene_manager_->destroySceneNode(sn_it->second);
+    sn_it = sn_map_ptr_->begin();
+    sn_it->second->detachAllObjects();
+    std::stringstream wp_name;
+    wp_name << "waypoint" << sn_it->first;
+    std::string wp_name_str(wp_name.str());
+    server_->erase(wp_name_str);
+    server_->applyChanges();
+    sn_map_ptr_->erase(sn_it);
   }
 
   //clear the waypoint map and reset index
-  sn_map_ptr_->clear();
+  //sn_map_ptr_->clear();
   *unique_ind_=0;
 
   //clear the interactive markers
-  server_->clear();
-  server_->applyChanges();
+  //server_->clear();
+  //server_->applyChanges();
 }
 
 void WaypointFrame::heightChanged(double h)
