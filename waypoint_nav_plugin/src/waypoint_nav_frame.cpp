@@ -43,6 +43,7 @@
 #include <fstream>
 #include "waypoint_nav_tool.hpp"
 //#include "waypoint_nav_frame.h"
+#include <mav_manager_srv/srv/vec4.hpp>
 
 #include <QFileDialog>
 #include <boost/foreach.hpp>
@@ -513,7 +514,7 @@ void WaypointFrame::display_corridros(){
  /* marker_array.markers.clear();
   for(int i =0;i<ineq_list.size()-1;i++){
       visualization_msgs::Marker marker;
-			marker.ns = "basic_shapes";
+			marker.ns = "basic_shapes";Vec4
 			marker.id = i;
 			marker.type = 1; //CUBE
 			// Set the marker action.  Options are ADD and DELETE
@@ -872,7 +873,25 @@ void WaypointFrame::takeoff_push_button(){
 }
 
 void WaypointFrame::goto_push_button(){
-    boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	if(relative_){
+		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
+	}
+	else{
+		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	}
+	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
+	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
+	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
+  request->goal[0]  = ui_->x_doubleSpinBox_gt->value();
+ 	request->goal[1] = ui_->y_doubleSpinBox_gt->value();
+  request->goal[2] = ui_->z_doubleSpinBox_gt->value();
+  request->goal[3]  = ui_->yaw_doubleSpinBox_gt->value();
+
+	auto result = client->async_send_request(request);
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 	/*ros::NodeHandle nh;
 	std::string srvs_name;
 	if(relative_){

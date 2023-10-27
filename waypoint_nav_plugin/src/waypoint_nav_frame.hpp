@@ -55,7 +55,7 @@
 #include "ui_WaypointNavigation.h"
 #include <OGRE/OgreVector3.h>
 #include <visualization_msgs/msg/marker_array.hpp>
-//#include <mav_manager/Vec4.h>
+#include <mav_manager_srv/srv/vec4.hpp>
 #include <rosbag2_cpp/writer.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rclcpp/serialization.hpp>

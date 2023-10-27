@@ -17,6 +17,7 @@
   <depend>rviz_rendering</depend>
   <depend>sensor_msgs</depend>
   <depend>rosbag2_cpp</depend>
+  <depend>mav_manager_srv</depend>
 
   <build_depend>qtbase5-dev</build_depend>
 
