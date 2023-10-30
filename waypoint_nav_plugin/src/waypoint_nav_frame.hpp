@@ -53,14 +53,13 @@
 #include <std_srvs/srv/empty.hpp>
 #include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
-#include <OGRE/OgreVector3.h>
+//#include <OGRE/OgreVector3.h>
 #include <visualization_msgs/msg/marker_array.hpp>
-#include <mav_manager_srv/srv/vec4.hpp>
 #include <rosbag2_cpp/writer.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rclcpp/serialization.hpp>
 #include <rosbag2_cpp/storage_options.hpp>
-
+#include <OgrePrerequisites.h>
 
 typedef struct {
     int derivOrder, vertexNum;
@@ -73,10 +72,10 @@ static const std::string append[5] = { "Pos", "Vel", "accel", "jerk" , "snap"};
 
 namespace Ogre
 {
-class SceneNode;
+//class SceneNode;
 //class Vector3;
-class SceneManager;
-class Quaternion;
+//class SceneManager;
+//class Quaternion;
 }
 
 namespace rviz_common

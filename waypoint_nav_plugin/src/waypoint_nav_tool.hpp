@@ -49,7 +49,8 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "rviz_common/render_panel.hpp"
-#include <OGRE/OgreVector3.h>
+//#include <OGRE/OgreVector3.h>
+#include <OgrePrerequisites.h>
 
 #include "rviz_rendering/geometry.hpp"
 #include <thread>
@@ -67,7 +68,7 @@ using std::placeholders::_1;
 #include "waypoint_nav_frame.hpp"
 namespace Ogre
 {
-class SceneNode;
+//class SceneNode;
 //class Vector3;
 }
 
