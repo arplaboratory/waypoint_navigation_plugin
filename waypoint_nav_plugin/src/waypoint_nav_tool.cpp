@@ -33,7 +33,7 @@
 //#include <OGRE/OgreSceneManager.h>
 //#include <OGRE/OgreEntity.h>
 #include <Ogre.h>
-
+//#include <OgrePrerequisites.h>
 #include "waypoint_nav_tool.hpp"
 #include <boost/bind.hpp>
 #include "rviz_rendering/viewport_projection_finder.hpp"
@@ -44,6 +44,7 @@
 #include "rviz_common/window_manager_interface.hpp"
 #include <rviz_rendering/mesh_loader.hpp>
 #include "rviz_common/render_panel.hpp"
+//#include <OGRE/OgreVector3.h>
 
 namespace waypoint_nav_plugin
 {
@@ -194,8 +195,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
 
       moving_flag_node_->setVisible(true);
       moving_flag_node_->setPosition(intersection);
-
-      frame_->setWpLabel(intersection);
+      //frame_->setWpLabel(intersection);
 
       //check if mouse pointer is near existing waypoint
       M_StringToSNPtr::iterator sn_it;
@@ -338,8 +338,13 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     Ogre::Vector3 p = position;
     Ogre::Quaternion q = quat;
     frame_->setSelectedMarkerName(wp_name_str);
-    frame_->setWpLabel(p);
-    frame_->setPose(p, q);
+    frame_->setWpLabel();
+    Eigen::Vector3f pos_eigen;
+    Eigen::Vector4f quat_eigen;
+    pos_eigen << position.x, position.y, position.z;
+    quat_eigen << quat.x, quat.y, quat.z,quat.w;
+
+    frame_->setPose(pos_eigen, quat_eigen);
     frame_->push_newIneq_const();
     server_->applyChanges();
 }
@@ -383,8 +388,16 @@ void WaypointNavTool::processFeedback(
           //Set the pose manually from the line edits
           Ogre::Vector3 position;
           Ogre::Quaternion quat;
-
-          frame_->getPose(position, quat);
+          Eigen::Vector3f pos_eigen;
+          Eigen::Vector4f quat_eigen;
+          frame_->getPose(&pos_eigen, &quat_eigen);
+          position.x = pos_eigen(0);
+          position.y = pos_eigen(1);
+          position.z = pos_eigen(2);
+          quat.x = quat_eigen(0);
+          quat.y = quat_eigen(1);
+          quat.z = quat_eigen(2);
+          quat.w = quat_eigen(3);
 
           geometry_msgs::msg::Pose pos;
           pos.position.x = position.x;
@@ -399,7 +412,7 @@ void WaypointNavTool::processFeedback(
           sn_entry->second->setPosition(position);
           sn_entry->second->setOrientation(quat);
 
-          frame_->setWpLabel(position);
+          frame_->setWpLabel();
 
           server_->setPose(feedback->marker_name, pos);
           server_->applyChanges();
@@ -434,8 +447,13 @@ void WaypointNavTool::processFeedback(
 
         sn_entry->second->setOrientation(quat);
 
-        frame_->setWpLabel(position);
-        frame_->setPose(position, quat);
+        frame_->setWpLabel();
+        Eigen::Vector3f pos_eigen;
+        Eigen::Vector4f quat_eigen;
+        pos_eigen << position.x, position.y, position.z;
+        quat_eigen << quat.x, quat.y, quat.z,quat.w;
+
+        frame_->setPose(pos_eigen, quat_eigen);
         frame_->setSelectedMarkerName(feedback->marker_name);
         //waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
         //frame_->setLimit(ineq.upper,ineq.lower,ineq.enable);

@@ -117,9 +117,9 @@ public:
 
   void setWpCount(int size);
   void setConfig(QString topic, QString frame, float height);
-  void setWpLabel(Ogre::Vector3 position);
+  void setWpLabel();
   void setSelectedMarkerName(std::string name);
-  void setPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
+  void setPose(Eigen::Vector3f position, Eigen::Vector4f quat);
 
 
   bool getTopicOveride();
@@ -130,7 +130,7 @@ public:
   bool get2Ddisplay();
   QString getFrameId();
   QString getOutputTopic();
-  void getPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
+  void getPose(Eigen::Vector3f * position, Eigen::Vector4f * quat);
   void display_corridros();
   void setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable);
   std::vector<waypoint_ineq_const> ineq_list;

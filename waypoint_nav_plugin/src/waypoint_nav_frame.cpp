@@ -44,6 +44,7 @@
 #include "waypoint_nav_tool.hpp"
 //#include "waypoint_nav_frame.h"
 #include <mav_manager_srv/srv/vec4.hpp>
+#include <OGRE/OgreVector3.h>
 
 #include <QFileDialog>
 #include <boost/foreach.hpp>
@@ -467,7 +468,17 @@ void WaypointFrame::poseChanged(double val)
   {
     Ogre::Vector3 position;
     Ogre::Quaternion quat;
-    getPose(position, quat);
+    Eigen::Vector3f pos_eigen;
+    Eigen::Vector4f quat_eigen;
+    getPose(&pos_eigen, &quat_eigen);
+    position.x = pos_eigen(0);
+    position.y = pos_eigen(1);
+    position.z = pos_eigen(2);
+
+    quat.x = quat_eigen(0);
+    quat.y = quat_eigen(1);
+    quat.z = quat_eigen(2);
+    quat.w = quat_eigen(3);
 
     sn_entry->second->setPosition(position);
     sn_entry->second->setOrientation(quat);
@@ -673,19 +684,19 @@ void WaypointFrame::setConfig(QString topic, QString frame, float height)
   heightChanged(height);
 }
 
-void WaypointFrame::getPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
+void WaypointFrame::getPose(Eigen::Vector3f * position, Eigen::Vector4f * quat)
 {
   {
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  position.x = ui_->x_doubleSpinBox->value();
-  position.y = ui_->y_doubleSpinBox->value();
-  position.z = ui_->z_doubleSpinBox->value();
+  (*position)(0) = ui_->x_doubleSpinBox->value();
+  (*position)(1) = ui_->y_doubleSpinBox->value();
+  (*position)(2) = ui_->z_doubleSpinBox->value();
   double yaw = ui_->yaw_doubleSpinBox->value();
   //extract quaternion from yaw simple conversion look Hopf Firbation paper
-  quat.x = 0.0;
-  quat.y = 0.0;
-  quat.z = sin(yaw/2);
-  quat.w = cos(yaw/2);
+  (*quat)(0) = 0.0;
+  (*quat)(1) = 0.0;
+  (*quat)(2) = sin(yaw/2);
+  (*quat)(3) = cos(yaw/2);
   //tf::Quaternion qt = tf::createQuaternionFromYaw(yaw);
   //quat.x = qt.x();
   //quat.y = qt.y();
@@ -695,7 +706,8 @@ void WaypointFrame::getPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   }
 }
 
-void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
+//Quaternion is scalar last 
+void WaypointFrame::setPose(Eigen::Vector3f  position, Eigen::Vector4f  quat)
 {
   {
   //boost::mutex::scoped_lock lock(frame_updates_mutex_);
@@ -705,13 +717,13 @@ void WaypointFrame::setPose(Ogre::Vector3& position, Ogre::Quaternion& quat)
   ui_->z_doubleSpinBox->blockSignals(true);
   ui_->yaw_doubleSpinBox->blockSignals(true);
 
-  ui_->x_doubleSpinBox->setValue(position.x);
-  ui_->y_doubleSpinBox->setValue(position.y);
-  ui_->z_doubleSpinBox->setValue(position.z);
+  ui_->x_doubleSpinBox->setValue(position(0));
+  ui_->y_doubleSpinBox->setValue(position(1));
+  ui_->z_doubleSpinBox->setValue(position(2));
   //extrat yaw from quaterinon
 
-  double  yaw = atan2(2.0*(quat.y*quat.z + quat.w*quat.x), 
-  quat.w*quat.w - quat.x*quat.x - quat.y*quat.y + quat.z*quat.z);
+  double  yaw = atan2(2.0*(quat(1)*quat(2) + quat(3) *quat(0) ), 
+  quat(3)*quat(3) - quat(0)*quat(0) - quat(1)*quat(1) + quat(2)*quat(2));
   ui_->yaw_doubleSpinBox->setValue(yaw);
 
   //enable the signals
@@ -755,7 +767,7 @@ void WaypointFrame::display(const nav_msgs::msg::Path &msg, int order){
 }
 */
 
-void WaypointFrame::setWpLabel(Ogre::Vector3 position)
+void WaypointFrame::setWpLabel()
 {
   {
   //boost::mutex::scoped_lock lock(frame_updates_mutex_);
