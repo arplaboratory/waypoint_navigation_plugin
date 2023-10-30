@@ -35,26 +35,19 @@
 #include <rviz_common/panel.hpp>
 #include "interactive_markers/interactive_marker_server.hpp"
 #include "interactive_markers/menu_handler.hpp"
-#include "rviz_common/viewport_mouse_event.hpp"
-#include "rviz_rendering/viewport_projection_finder.hpp"
-#include "rviz_common/properties/vector_property.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/interactive_marker.hpp"
 #include "visualization_msgs/msg/interactive_marker_feedback.hpp"
 #include <rcutils/logging_macros.h>
 #include <rviz_common/tool.hpp>
-#include <rviz_common/display_context.hpp>
-#include <rviz_rendering/mesh_loader.hpp>
+
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include "rviz_common/render_panel.hpp"
 //#include <OGRE/OgreVector3.h>
-#include <OgrePrerequisites.h>
+//#include <OgrePrerequisites.h>
 
-#include "rviz_rendering/geometry.hpp"
 #include <thread>
-#include "rviz_common/window_manager_interface.hpp"
 /*
 #include "rviz_common/render_panel.hpp"
 #include <rviz_common/display_context.hpp>

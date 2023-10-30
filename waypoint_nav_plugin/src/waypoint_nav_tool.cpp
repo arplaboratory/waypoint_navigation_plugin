@@ -36,6 +36,15 @@
 
 #include "waypoint_nav_tool.hpp"
 #include <boost/bind.hpp>
+#include "rviz_rendering/viewport_projection_finder.hpp"
+#include <rviz_common/display_context.hpp>
+#include "rviz_common/viewport_mouse_event.hpp"
+#include "rviz_common/properties/vector_property.hpp"
+#include "rviz_rendering/geometry.hpp"
+#include "rviz_common/window_manager_interface.hpp"
+#include <rviz_rendering/mesh_loader.hpp>
+#include "rviz_common/render_panel.hpp"
+
 namespace waypoint_nav_plugin
 {
 
@@ -227,7 +236,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
       moving_flag_node_->setVisible(false);
     }
   return Render;
-}
+  }
 
 void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat)
 {

@@ -942,24 +942,18 @@ void WaypointFrame::serviceChanged(){
 
 void WaypointFrame::goHome_push_button(){
     boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	/*ros::NodeHandle nh;
-	std::string srvs_name;
+  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
-	mav_manager::Vec4 srv;
-  	srv.request.goal [0] = 0;
- 	srv.request.goal [1] = 0;
-  	srv.request.goal [2] = 0.5;
-  	srv.request.goal [3] = 0;
-	if (client.call(srv))
-	{
-		ROS_INFO("Go Home Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed Go Home ");
-	}		
-  }*/
+	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
+	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
+	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
+  request->goal[0]  = 0.0;
+ 	request->goal[1] = 0.0;
+  request->goal[2] = 0.5;
+  request->goal[3]  = 0.0;
+	auto result = client->async_send_request(request);
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+
 
 }
 }
