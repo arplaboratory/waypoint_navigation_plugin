@@ -7,8 +7,6 @@ Install
 
 ```
 sudo apt-get install gnuplot
-sudo apt-get uninstall libogre-1.9-dev
-sudo apt-get install libogre-1.12-dev
 cd /path/to/colcon_ws/
 colcon build --symlink-install
 source /path/to/colcon_ws/install/setup.bash
