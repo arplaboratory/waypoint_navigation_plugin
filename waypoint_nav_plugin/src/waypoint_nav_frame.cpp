@@ -160,37 +160,15 @@ void WaypointFrame::bern_enable(int b)
 
 void WaypointFrame::saveButtonClicked()
 {
-  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*.txt)"));
-   if(filename == "")
+  QString filename = QFileDialog::getOpenFileName(0,tr("Open Bag"), "~/", tr("Bag Files (*.txt)"));
+  QFileInfo info(filename);
+  std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
+  if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
-   else
+  else
   {
-    QFileInfo info(filename);
-    std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
-    std::ofstream outputFile(filn);
-    if (outputFile.is_open()) {
-      outputFile << sn_map_ptr_->size() << std::endl;
-      std::map<int, Ogre::SceneNode* >::iterator sn_it;
-      for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
-      {
-        
-        Ogre::Vector3 position;
-        position = sn_it->second->getPosition();
-        outputFile << position.x << std::endl;
-        outputFile << position.y << std::endl;
-        outputFile << position.z << std::endl;
-        Ogre::Quaternion quat;
-        quat = sn_it->second->getOrientation();        
-        outputFile << quat.x << std::endl;
-        outputFile << quat.y << std::endl;
-        outputFile << quat.z << std::endl;
-        outputFile << quat.w << std::endl;
-      }
-      outputFile.close(); // Close the file when you're done with it.
-    } else {
-        std::cout << "Failed to open the file!" << std::endl;
-    }    
-  }
+    wp_nav_tool_->savePoints(filn);
+  }   
 }
 
 void WaypointFrame::loadButtonClicked()
@@ -200,38 +178,7 @@ void WaypointFrame::loadButtonClicked()
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
   else
   {
-    //Clear existing waypoints
-    clearAllWaypoints();
-    std::string filn = filename.toStdString();
-    std::cout << " loading waypoints from " << filn <<std::endl;
-    std::ifstream inputFile(filn);
-    if (inputFile.is_open()) {
-      std::string line;
-      std::getline(inputFile, line);
-      int numPoints = std::stoi(line);
-      for(int i =0;i<numPoints;i++){
-        std::getline(inputFile, line);
-        Ogre::Vector3 position;
-        position.x = std::stof(line);
-        std::getline(inputFile, line);
-        position.y = std::stof(line);
-        std::getline(inputFile, line);
-        position.z = std::stof(line);
-        Ogre::Quaternion quat;
-        std::getline(inputFile, line);
-        quat.x = std::stof(line);
-        std::getline(inputFile, line);
-        quat.y = std::stof(line);
-        std::getline(inputFile, line);
-        quat.z = std::stof(line);
-        std::getline(inputFile, line);
-        quat.w = std::stof(line);
-        wp_nav_tool_->makeIm(position, quat);
-      }
-      inputFile.close();
-    } else {
-        std::cerr << "Failed to open the file!" << std::endl;
-    }
+    wp_nav_tool_->loadPoints(filename.toStdString());
   }
 }
 
@@ -297,8 +244,6 @@ void WaypointFrame::setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, boo
 
 void WaypointFrame::publishButtonClicked()
 {
-  nav_msgs::msg::Path path;
-  std::map<int, Ogre::SceneNode* >::iterator sn_it;
   if(!getTopicOveride()){
     std::string topic_name = "/waypoints";
     /*if(getBernEnable()){
@@ -307,31 +252,9 @@ void WaypointFrame::publishButtonClicked()
     wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
     //std::this_thread::sleep_for(std::chrono::milliseconds(300));
   }
-  
-  for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
-  {
-    Ogre::Vector3 position;
-    position = sn_it->second->getPosition();
-
-    geometry_msgs::msg::PoseStamped pos;
-    pos.pose.position.x = position.x;
-    pos.pose.position.y = position.y;
-    pos.pose.position.z = position.z;
-
-    Ogre::Quaternion quat;
-    quat = sn_it->second->getOrientation();
-    pos.pose.orientation.x = quat.x;
-    pos.pose.orientation.y = quat.y;
-    pos.pose.orientation.z = quat.z;
-    pos.pose.orientation.w = quat.w;
-
-    path.poses.push_back(pos);
-  }
-
+  nav_msgs::msg::Path path;
+  path = wp_nav_tool_->getPath();
   path.header.frame_id = frame_id_.toStdString();
-  //nh_.setParam("/total_time", getTime());
-  //nh_.setParam("/display_2D", get2Ddisplay());
-  //nh_.setParam("/"+ robot_name+"/"+"bern_enable",getBernEnable());
   wp_pub_->publish(path);
 }
 
@@ -378,21 +301,9 @@ void WaypointFrame::perchClicked()
 void WaypointFrame::clearAllWaypoints()
 {
   //destroy the ogre scene nodes
-  std::map<int, Ogre::SceneNode* >::iterator sn_it;
-  while (sn_map_ptr_->size()>0)
-  {
-    sn_it = sn_map_ptr_->begin();
-    sn_it->second->detachAllObjects();
-    std::stringstream wp_name;
-    wp_name << "waypoint" << sn_it->first;
-    std::string wp_name_str(wp_name.str());
-    server_->erase(wp_name_str);
-    server_->applyChanges();
-    sn_map_ptr_->erase(sn_it);
-  }
-
   //clear the waypoint map and reset index
   //sn_map_ptr_->clear();
+  wp_nav_tool_->clearAllWaypoints();
   *unique_ind_=0;
 
   //clear the interactive markers
@@ -457,67 +368,10 @@ void WaypointFrame::setSelectedMarkerName(std::string name)
 
 void WaypointFrame::poseChanged(double val)
 {
-
-  std::map<int, Ogre::SceneNode *>::iterator sn_entry =
-      sn_map_ptr_->find(std::stoi(selected_marker_name_.substr(8)));
-
-  if (sn_entry == sn_map_ptr_->end())
-    RCLCPP_ERROR(node->get_logger(),"%s not found in map", selected_marker_name_.c_str());
-    //ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
-  else
-  {
-    Ogre::Vector3 position;
-    Ogre::Quaternion quat;
-    Eigen::Vector3f pos_eigen;
-    Eigen::Vector4f quat_eigen;
-    getPose(&pos_eigen, &quat_eigen);
-    position.x = pos_eigen(0);
-    position.y = pos_eigen(1);
-    position.z = pos_eigen(2);
-
-    quat.x = quat_eigen(0);
-    quat.y = quat_eigen(1);
-    quat.z = quat_eigen(2);
-    quat.w = quat_eigen(3);
-
-    sn_entry->second->setPosition(position);
-    sn_entry->second->setOrientation(quat);
-    geometry_msgs::msg::Pose pos;
-    pos.position.x = position.x;
-    pos.position.y = position.y;
-    pos.position.z = position.z;
-
-    pos.orientation.x = quat.x;
-    pos.orientation.y = quat.y;
-    pos.orientation.z = quat.z;
-    pos.orientation.w = quat.w;
-
-    std::stringstream wp_name;
-    wp_name << "waypoint" << sn_entry->first;
-    std::string wp_name_str(wp_name.str());
-    std::cout <<" WAYPOINT " <<std::endl;
-    visualization_msgs::msg::InteractiveMarker int_marker;
-    std::cout <<" get start " <<std::endl;
-    server_->setPose(wp_name_str, pos);
-    std::cout <<" set pose " <<std::endl;
-
-    /*if(!server_->get(wp_name_str, int_marker))
-    {
-
-      int_marker.pose.position.x = position.x;
-      int_marker.pose.position.y = position.y;
-      int_marker.pose.position.z = position.z;
-
-      int_marker.pose.orientation.x = quat.x;
-      int_marker.pose.orientation.y = quat.y;
-      int_marker.pose.orientation.z = quat.z;
-      int_marker.pose.orientation.w = quat.w;
-
-      server_->setPose(wp_name_str, int_marker.pose, int_marker.header);
-    }*/
-    std::cout << " SERVER Set" <<std::endl;
-    server_->applyChanges();
-  }
+  Eigen::Vector3f pos_eigen;
+  Eigen::Vector4f quat_eigen;
+  getPose(&pos_eigen, &quat_eigen);
+  bool succ = wp_nav_tool_->setServerPose(std::stoi(selected_marker_name_.substr(8)), pos_eigen, quat_eigen);
 }
 
 
@@ -720,12 +574,33 @@ void WaypointFrame::setPose(Eigen::Vector3f  position, Eigen::Vector4f  quat)
   ui_->x_doubleSpinBox->setValue(position(0));
   ui_->y_doubleSpinBox->setValue(position(1));
   ui_->z_doubleSpinBox->setValue(position(2));
-  //extrat yaw from quaterinon
+  double yaw;
+  double q_x = quat(0);
+  double q_y =quat(1);
+  double q_z =quat(2);
+  double q_w = quat(3);
 
-  double  yaw = atan2(2.0*(quat(1)*quat(2) + quat(3) *quat(0) ), 
-  quat(3)*quat(3) - quat(0)*quat(0) - quat(1)*quat(1) + quat(2)*quat(2));
+  double sqw;
+  double sqx;
+  double sqy;
+  double sqz;
+
+  sqx = q_x * q_x;
+  sqy = q_y *q_y;
+  sqz = q_z * q_z;
+  sqw = q_w * q_w;
+
+  // Cases derived from https://orbitalstation.wordpress.com/tag/quaternion/
+  // normalization added from urdfom_headers
+  double sarg = -2 * (q_x * q_z - q_w * q_y) / (sqx + sqy + sqz + sqw);
+  if (sarg <= -0.99999) {
+    yaw = -2 * atan2(q_y, q_x);
+  } else if (sarg >= 0.99999) {
+    yaw = 2 * atan2(q_y, q_x);
+  } else {
+    yaw = atan2(2 * (q_x * q_y + q_w * q_z), sqw + sqx - sqy - sqz);
+  }
   ui_->yaw_doubleSpinBox->setValue(yaw);
-
   //enable the signals
   ui_->x_doubleSpinBox->blockSignals(false);
   ui_->y_doubleSpinBox->blockSignals(false);

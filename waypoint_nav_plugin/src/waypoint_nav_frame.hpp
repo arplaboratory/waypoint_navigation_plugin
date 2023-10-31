@@ -35,6 +35,13 @@
 /* Author: Ioan Sucan */
 /* Author: Dinesh Thakur - Modified for waypoint navigation */
 
+//READ THIS NOTICE BEFORE YOU DO ANYTHING RIGHT NOW!!!!!!!
+
+//WE CAN NOT USE OGRE VECTOR operations in waypoint_nav_frame.cpp
+//DO ALL OGRE OPERATIONS IN waypoint_nav_tool.cpp FIRST OR COMMAND IN TOOL
+//I AM SERIOUS IT IS YOUR OWN FAULT IF YOU DON'T READ THIS NOTICES
+
+
 #ifndef KR_RVIZ_PLUGIN_WAYPOINT_FRAME_
 #define KR_RVIZ_PLUGIN_WAYPOINT_FRAME_
 

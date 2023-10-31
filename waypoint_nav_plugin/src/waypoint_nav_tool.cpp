@@ -195,7 +195,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
 
       moving_flag_node_->setVisible(true);
       moving_flag_node_->setPosition(intersection);
-      //frame_->setWpLabel(intersection);
+      frame_->setWpLabel();
 
       //check if mouse pointer is near existing waypoint
       M_StringToSNPtr::iterator sn_it;
@@ -245,7 +245,6 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     std::stringstream wp_name;
     wp_name << "waypoint" << unique_ind_;
     std::string wp_name_str(wp_name.str());
-
     if (rviz_rendering::loadMeshFromResource(flag_resource_).isNull()) {
       RCLCPP_ERROR(
         rclcpp::get_logger("waypoint nav plugin"),
@@ -269,6 +268,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
       sn_map_.insert(std::make_pair(unique_ind_, sn_ptr));
     else{
     //  ROS_WARN("%s already in map", wp_name_str.c_str());
+      //std::cout << " BUGGEr OFF" <<std::endl;
       return;
     }
 
@@ -349,6 +349,51 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     server_->applyChanges();
 }
 
+bool WaypointNavTool::setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen){
+  std::map<int, Ogre::SceneNode *>::iterator sn_entry =  sn_map_.find(index);
+  if (sn_entry == sn_map_.end()){
+    RCLCPP_ERROR(rclcpp::get_logger("waypoint nav plugin")
+    ,"waypoint %d not found in map",index);
+    return false;
+  }
+    //ROS_ERROR("%s not found in map", selected_marker_name_.c_str());
+  else
+  {
+    Ogre::Vector3 position;
+    Ogre::Quaternion quat;
+    position.x = pos_eigen(0);
+    position.y = pos_eigen(1);
+    position.z = pos_eigen(2);
+    quat.x = quat_eigen(0);
+    quat.y = quat_eigen(1);
+    quat.z = quat_eigen(2);
+    quat.w = quat_eigen(3);
+    sn_entry->second->setPosition(position);
+    sn_entry->second->setOrientation(quat);
+    geometry_msgs::msg::Pose pos;
+    pos.position.x = position.x;
+    pos.position.y = position.y;
+    pos.position.z = position.z;
+
+    pos.orientation.x = quat.x;
+    pos.orientation.y = quat.y;
+    pos.orientation.z = quat.z;
+    pos.orientation.w = quat.w;
+
+    std::stringstream wp_name;
+    wp_name << "waypoint" << sn_entry->first;
+    std::string wp_name_str(wp_name.str());
+    std::cout <<" WAYPOINT " << wp_name_str <<std::endl;
+    visualization_msgs::msg::InteractiveMarker int_marker;
+    std::cout <<" get start " <<std::endl;
+    server_->setPose(wp_name_str, pos);
+    std::cout <<" set pose " <<std::endl;
+    std::cout << " SERVER Set" <<std::endl;
+    server_->applyChanges();
+  }
+}
+
+
 void WaypointNavTool::processFeedback(
       const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback)
 {
@@ -391,6 +436,8 @@ void WaypointNavTool::processFeedback(
           Eigen::Vector3f pos_eigen;
           Eigen::Vector4f quat_eigen;
           frame_->getPose(&pos_eigen, &quat_eigen);
+          std::cout << " POS SET " << pos_eigen.transpose() <<std::endl;
+          std::cout << " quat SET " << quat_eigen.transpose() <<std::endl;
           position.x = pos_eigen(0);
           position.y = pos_eigen(1);
           position.z = pos_eigen(2);
@@ -413,7 +460,6 @@ void WaypointNavTool::processFeedback(
           sn_entry->second->setOrientation(quat);
 
           frame_->setWpLabel();
-
           server_->setPose(feedback->marker_name, pos);
           server_->applyChanges();
         }
@@ -447,12 +493,11 @@ void WaypointNavTool::processFeedback(
 
         sn_entry->second->setOrientation(quat);
 
-        frame_->setWpLabel();
         Eigen::Vector3f pos_eigen;
         Eigen::Vector4f quat_eigen;
         pos_eigen << position.x, position.y, position.z;
         quat_eigen << quat.x, quat.y, quat.z,quat.w;
-
+        frame_->setWpLabel();
         frame_->setPose(pos_eigen, quat_eigen);
         frame_->setSelectedMarkerName(feedback->marker_name);
         //waypoint_ineq_const ineq = frame_->ineq_list[std::stoi(feedback->marker_name.substr(8))-1];
@@ -481,15 +526,106 @@ void WaypointNavTool::getMarkerPoses()
   }
 }
 
-void WaypointNavTool::clearAllWaypoints()
-{
-  M_StringToSNPtr::iterator sn_it;
+nav_msgs::msg::Path WaypointNavTool::getPath(){
+  nav_msgs::msg::Path path;
+  std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
   {
-      scene_manager_->destroySceneNode(sn_it->second);
+    Ogre::Vector3 position;
+    position = sn_it->second->getPosition();
+
+    geometry_msgs::msg::PoseStamped pos;
+    pos.pose.position.x = position.x;
+    pos.pose.position.y = position.y;
+    pos.pose.position.z = position.z;
+
+    Ogre::Quaternion quat;
+    //quat = sn_it->second->getOrientation();
+    pos.pose.orientation.x = 0;//quat.x;
+    pos.pose.orientation.y = 0;//quat.y;
+    pos.pose.orientation.z = 0;//quat.z;
+    pos.pose.orientation.w = 1;//quat.w;
+
+    path.poses.push_back(pos);
   }
-  sn_map_.clear();
-  unique_ind_ = 0;
+  return path;
+}
+
+void WaypointNavTool::clearAllWaypoints()
+{
+  //M_StringToSNPtr::iterator sn_it;
+  std::map<int, Ogre::SceneNode* >::iterator sn_it;
+  while (sn_map_.size()>0)
+  {
+    sn_it = sn_map_.begin();
+    sn_it->second->detachAllObjects();
+    std::stringstream wp_name;
+    wp_name << "waypoint" << sn_it->first;
+    std::string wp_name_str(wp_name.str());
+    server_->erase(wp_name_str);
+    server_->applyChanges();
+    sn_map_.erase(sn_it);
+  }
+}
+
+void WaypointNavTool::loadPoints(std::string filn)
+{
+  //Clear existing waypoints
+  clearAllWaypoints();
+  std::cout << " loading waypoints from " << filn <<std::endl;
+  std::ifstream inputFile(filn);
+  if (inputFile.is_open()) {
+    std::string line;
+    std::getline(inputFile, line);
+    int numPoints = std::stoi(line);
+    for(int i =0;i<numPoints;i++){
+      std::getline(inputFile, line);
+      Ogre::Vector3 position;
+      position.x = std::stof(line);
+      std::getline(inputFile, line);
+      position.y = std::stof(line);
+      std::getline(inputFile, line);
+      position.z = std::stof(line);
+      Ogre::Quaternion quat;
+      std::getline(inputFile, line);
+      quat.x = std::stof(line);
+      std::getline(inputFile, line);
+      quat.y = std::stof(line);
+      std::getline(inputFile, line);
+      quat.z = std::stof(line);
+      std::getline(inputFile, line);
+      quat.w = std::stof(line);
+      makeIm(position, quat);
+    }
+    inputFile.close();
+  } else {
+      std::cerr << "Failed to open the file!" << std::endl;
+  }
+}
+
+void WaypointNavTool::savePoints(std::string filn){
+  std::ofstream outputFile(filn);
+  if (outputFile.is_open()) {
+    outputFile << sn_map_.size() << std::endl;
+    std::map<int, Ogre::SceneNode* >::iterator sn_it;
+    for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
+    {
+      Ogre::Vector3 position;
+      position = sn_it->second->getPosition();
+      outputFile << position.x << std::endl;
+      outputFile << position.y << std::endl;
+      outputFile << position.z << std::endl;
+      Ogre::Quaternion quat;
+      quat = sn_it->second->getOrientation();        
+      outputFile << quat.x << std::endl;
+      outputFile << quat.y << std::endl;
+      outputFile << quat.z << std::endl;
+      outputFile << quat.w << std::endl;
+    }
+    outputFile.close(); // Close the file when you're done with it.
+  } else {
+      std::cout << "Failed to open the file!" << std::endl;
+  }    
 }
 
 // Loading and saving the waypoints

@@ -104,11 +104,19 @@ public:
   virtual void save(rviz_common::Config config) const;
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
   void spin();
+  bool setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen);
+  //CLEAR
+  void clearAllWaypoints();
+  //SAVE
+  void savePoints(std::string filn);
+  //Load
+  void loadPoints(std::string filn);
+  //GET GEOMETRY MSGS PATH
+  nav_msgs::msg::Path getPath();
 
 private:
   void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback);
   void getMarkerPoses();
-  void clearAllWaypoints();
 
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
