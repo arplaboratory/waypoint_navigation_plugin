@@ -3,6 +3,13 @@
 This directory contains both waypoint_navigation_plugin and quadrotor_path
 
 Prerequisite for 2D plotting THIS WILL WIPE RVIZ1 PLUGIN
+
+This has been Tested for LIbogre1.9-1.12. If you don't have Ogre run
+
+```
+sudo apt-get install libogre-1.9-dev
+```
+
 Install
 
 ```
