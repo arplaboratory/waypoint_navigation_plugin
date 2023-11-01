@@ -35,6 +35,13 @@
 /* Author: Ioan Sucan */
 /* Author: Dinesh Thakur - Modified for waypoint navigation */
 
+//READ THIS NOTICE BEFORE YOU DO ANYTHING RIGHT NOW!!!!!!!
+
+//WE CAN NOT USE OGRE VECTOR operations in waypoint_nav_frame.cpp
+//DO ALL OGRE OPERATIONS IN waypoint_nav_tool.cpp FIRST OR COMMAND IN TOOL
+//I AM SERIOUS IT IS YOUR OWN FAULT IF YOU DON'T READ THIS NOTICES
+
+
 #ifndef KR_RVIZ_PLUGIN_WAYPOINT_FRAME_
 #define KR_RVIZ_PLUGIN_WAYPOINT_FRAME_
 
@@ -117,9 +124,9 @@ public:
 
   void setWpCount(int size);
   void setConfig(QString topic, QString frame, float height);
-  void setWpLabel(Ogre::Vector3 position);
+  void setWpLabel();
   void setSelectedMarkerName(std::string name);
-  void setPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
+  void setPose(Eigen::Vector3f position, Eigen::Vector4f quat);
 
 
   bool getTopicOveride();
@@ -130,7 +137,7 @@ public:
   bool get2Ddisplay();
   QString getFrameId();
   QString getOutputTopic();
-  void getPose(Ogre::Vector3& position, Ogre::Quaternion& quat);
+  void getPose(Eigen::Vector3f * position, Eigen::Vector4f * quat);
   void display_corridros();
   void setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable);
   std::vector<waypoint_ineq_const> ineq_list;

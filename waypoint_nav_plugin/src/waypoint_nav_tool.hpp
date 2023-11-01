@@ -35,26 +35,19 @@
 #include <rviz_common/panel.hpp>
 #include "interactive_markers/interactive_marker_server.hpp"
 #include "interactive_markers/menu_handler.hpp"
-#include "rviz_common/viewport_mouse_event.hpp"
-#include "rviz_rendering/viewport_projection_finder.hpp"
-#include "rviz_common/properties/vector_property.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/interactive_marker.hpp"
 #include "visualization_msgs/msg/interactive_marker_feedback.hpp"
 #include <rcutils/logging_macros.h>
 #include <rviz_common/tool.hpp>
-#include <rviz_common/display_context.hpp>
-#include <rviz_rendering/mesh_loader.hpp>
+
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include "rviz_common/render_panel.hpp"
 //#include <OGRE/OgreVector3.h>
 #include <OgrePrerequisites.h>
 
-#include "rviz_rendering/geometry.hpp"
 #include <thread>
-#include "rviz_common/window_manager_interface.hpp"
 /*
 #include "rviz_common/render_panel.hpp"
 #include <rviz_common/display_context.hpp>
@@ -66,12 +59,6 @@
 **/
 using std::placeholders::_1;
 #include "waypoint_nav_frame.hpp"
-namespace Ogre
-{
-//class SceneNode;
-//class Vector3;
-}
-
 namespace rviz_common::properties
 {
 class VectorProperty;
@@ -117,11 +104,19 @@ public:
   virtual void save(rviz_common::Config config) const;
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
   void spin();
+  bool setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen);
+  //CLEAR
+  void clearAllWaypoints();
+  //SAVE
+  void savePoints(std::string filn);
+  //Load
+  void loadPoints(std::string filn);
+  //GET GEOMETRY MSGS PATH
+  nav_msgs::msg::Path getPath();
 
 private:
   void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback);
   void getMarkerPoses();
-  void clearAllWaypoints();
 
   Ogre::SceneNode* moving_flag_node_;
   std::string flag_resource_;
