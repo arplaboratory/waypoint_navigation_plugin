@@ -262,30 +262,6 @@ void WaypointFrame::publishButtonClicked()
 void WaypointFrame::perchClicked()
 {
   nav_msgs::msg::Path path;
-  std::map<int, Ogre::SceneNode* >::iterator sn_it;
-  for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
-  {
-    Ogre::Vector3 position;
-    position = sn_it->second->getPosition();
-
-    geometry_msgs::msg::PoseStamped pos;
-    pos.pose.position.x = position.x;
-    pos.pose.position.y = position.y;
-    pos.pose.position.z = position.z;
-
-    Ogre::Quaternion quat;
-    quat = sn_it->second->getOrientation();
-    pos.pose.orientation.x = quat.x;
-    pos.pose.orientation.y = quat.y;
-    pos.pose.orientation.z = quat.z;
-    pos.pose.orientation.w = quat.w;
-
-    path.poses.push_back(pos);
-  }
-
-  path.header.frame_id = frame_id_.toStdString();
-  //nh_.setParam("/total_time", getTime());
-  //nh_.setParam("/display_2D", get2Ddisplay());
   if(!getTopicOveride()){
     std::string topic_name = "/perch";
     if(getBernEnable()){
@@ -293,6 +269,8 @@ void WaypointFrame::perchClicked()
     }
     wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
   }
+  path = wp_nav_tool_->getPath();
+  path.header.frame_id = frame_id_.toStdString();
   wp_pub_->publish(path);
 }
 
@@ -463,29 +441,10 @@ void WaypointFrame::frameChanged()
 
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->frame_line_edit->text();
-
   // Only take action if the frame has changed.
   if((new_frame != frame_id_)  && (new_frame != ""))
   {
-    frame_id_ = new_frame;
-    //ROS_INFO("new frame: %s", frame_id_.toStdString().c_str());
-
-    // update the frames for all interactive markers
-    std::map<int, Ogre::SceneNode *>::iterator sn_it;
-    for (sn_it = sn_map_ptr_->begin(); sn_it != sn_map_ptr_->end(); sn_it++)
-    {
-      std::stringstream wp_name;
-      wp_name << "waypoint" << sn_it->first;
-      std::string wp_name_str(wp_name.str());
-
-      visualization_msgs::msg::InteractiveMarker int_marker;
-      if(server_->get(wp_name_str, int_marker))
-      {
-        int_marker.header.frame_id = new_frame.toStdString();
-        server_->setPose(wp_name_str, int_marker.pose, int_marker.header);
-      }
-    }
-    server_->applyChanges();
+    wp_nav_tool_->changeFrame(new_frame.toStdString());
   }
 }
 

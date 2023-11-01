@@ -508,6 +508,26 @@ void WaypointNavTool::processFeedback(
   }
 }
 
+void WaypointNavTool::changeFrame(std::string frame_id){
+  // update the frames for all interactive markers
+  std::map<int, Ogre::SceneNode *>::iterator sn_it;
+  for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
+  {
+    std::stringstream wp_name;
+    wp_name << "waypoint" << sn_it->first;
+    std::string wp_name_str(wp_name.str());
+
+    visualization_msgs::msg::InteractiveMarker int_marker;
+    if(server_->get(wp_name_str, int_marker))
+    {
+      int_marker.header.frame_id = frame_id;
+      server_->setPose(wp_name_str, int_marker.pose, int_marker.header);
+    }
+  }
+  server_->applyChanges();
+}
+
+
 void WaypointNavTool::getMarkerPoses()
 {
   M_StringToSNPtr::iterator sn_it;

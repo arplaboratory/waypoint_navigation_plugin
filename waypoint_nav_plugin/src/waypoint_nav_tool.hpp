@@ -99,20 +99,22 @@ public:
   virtual void deactivate();
 
   virtual int processMouseEvent(rviz_common::ViewportMouseEvent& event);
-
+  //LOAD SETTINGS NOT WAYPOINTS
   virtual void load(const rviz_common::Config& config);
   virtual void save(rviz_common::Config config) const;
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
   void spin();
   bool setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen);
-  //CLEAR
+  //CLEAR all waypoints
   void clearAllWaypoints();
-  //SAVE
+  //SAVE waypoints NOT SETTINGs
   void savePoints(std::string filn);
-  //Load
+  //Load the waypoints NOT SETTING
   void loadPoints(std::string filn);
   //GET GEOMETRY MSGS PATH
   nav_msgs::msg::Path getPath();
+  // Change the farmeID
+  void changeFrame(std::string frame_id);
 
 private:
   void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback);
