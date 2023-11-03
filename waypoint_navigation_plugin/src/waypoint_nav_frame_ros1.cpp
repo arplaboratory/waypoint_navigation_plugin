@@ -41,7 +41,7 @@
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 
-#include "waypoint_nav_tool.h"
+#include "waypoint_nav_tool_ros1.h"
 
 //#include "waypoint_nav_frame.h"
 //#include "waypoint_nav_frame.h"
@@ -952,8 +952,8 @@ void WaypointFrame::goto_push_button(){
 	else{
 		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	}
-	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
-	mav_manager::Vec4 srv;
+	ros::ServiceClient client = nh.serviceClient<mav_manager_srv::Vec4>(srvs_name);
+	mav_manager_srv::Vec4 srv;
   	srv.request.goal [0] = ui_->x_doubleSpinBox_gt->value();
  	srv.request.goal [1] = ui_->y_doubleSpinBox_gt->value();
   	srv.request.goal [2] = ui_->z_doubleSpinBox_gt->value();
@@ -1007,8 +1007,8 @@ void WaypointFrame::goHome_push_button(){
 	ros::NodeHandle nh;
 	std::string srvs_name;
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
-	mav_manager::Vec4 srv;
+	ros::ServiceClient client = nh.serviceClient<mav_manager_srv::Vec4>(srvs_name);
+	mav_manager_srv::Vec4 srv;
   	srv.request.goal [0] = 0;
  	srv.request.goal [1] = 0;
   	srv.request.goal [2] = 0.5;

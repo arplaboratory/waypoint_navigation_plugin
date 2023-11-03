@@ -46,7 +46,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 
-#include "waypoint_nav_tool.h"
+#include "waypoint_nav_tool_ros1.h"
 
 namespace waypoint_nav_plugin
 {

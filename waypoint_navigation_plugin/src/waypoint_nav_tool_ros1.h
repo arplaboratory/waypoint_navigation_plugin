@@ -38,7 +38,7 @@
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
 
-#include "waypoint_nav_frame.h"
+#include "waypoint_nav_frame_ros1.h"
 namespace Ogre
 {
 class SceneNode;
