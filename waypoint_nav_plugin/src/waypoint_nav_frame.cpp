@@ -43,7 +43,6 @@
 #include <fstream>
 #include "waypoint_nav_tool.hpp"
 //#include "waypoint_nav_frame.h"
-#include <mav_manager_srv/srv/vec4.hpp>
 #include <OGRE/OgreVector3.h>
 
 #include <QFileDialog>
@@ -201,43 +200,6 @@ void WaypointFrame::push_newIneq_const(){
 
 void WaypointFrame::setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable)
 {
-  //boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  //block spinbox signals
-  /*
-  ui_->bern_pl->blockSignals(true);
-  ui_->bern_xl->blockSignals(true);
-  ui_->bern_yl->blockSignals(true);
-  ui_->bern_zl->blockSignals(true);
-  ui_->bern_pu->blockSignals(true);
-  ui_->bern_xu->blockSignals(true);
-  ui_->bern_yu->blockSignals(true);
-  ui_->bern_zu->blockSignals(true);
-  ui_->ineq_enable->blockSignals(true);
-
-
-#include <chrono>
-#include <thread>
-  ui_->bern_xl->setValue(lower[0]);
-  ui_->bern_yl->setValue(lower[1]);
-  ui_->bern_zl->setValue(lower[2]);
-  ui_->bern_pl->setValue(lower[3]);
-  ui_->bern_xu->setValue(upper[0]);
-  ui_->bern_yu->setValue(upper[1]);
-  ui_->bern_zu->setValue(upper[2]);
-  ui_->bern_pu->setValue(upper[3]);
-  ui_->ineq_enable->setValue(enable);
-
-
-  //enable the signals
-  ui_->bern_pl->blockSignals(false);
-  ui_->bern_xl->blockSignals(false);
-  ui_->bern_yl->blockSignals(false);
-  ui_->bern_zl->blockSignals(false);
-  ui_->bern_pu->blockSignals(false);
-  ui_->bern_xu->blockSignals(false);
-  ui_->bern_yu->blockSignals(false);
-  ui_->bern_zu->blockSignals(false);
-  ui_->ineq_enable->blockSignals(false);*/
 
 }
 
@@ -354,51 +316,6 @@ void WaypointFrame::poseChanged(double val)
 
 
 void WaypointFrame::display_corridros(){
- /* marker_array.markers.clear();
-  for(int i =0;i<ineq_list.size()-1;i++){
-      visualization_msgs::Marker marker;
-			marker.ns = "basic_shapes";Vec4
-			marker.id = i;
-			marker.type = 1; //CUBE
-			// Set the marker action.  Options are ADD and DELETE
-			marker.action = visualization_msgs::Marker::DELETE;
-      marker_array.markers.push_back(marker);
-  }
-  pub_corridor_.publish(marker_array);
-  marker_array.markers.clear();
-  for(int i =0;i<ineq_list.size()-1;i++){
-    if(ineq_list[i].enable==1){
-      visualization_msgs::Marker marker;
-      Eigen::Vector4d l= ineq_list[i].lower;
-      Eigen::Vector4d u= ineq_list[i].upper;
-      marker.header.frame_id=frame_id_.toStdString();
-      marker.pose.position.x = 0.5*(l[0]+u[0]);
-      marker.pose.position.y = 0.5*(l[1]+u[1]);
-      marker.pose.position.z = 0.5*(l[2]+u[2]);
-
-      marker.pose.orientation.w = 1.0;
-      marker.pose.orientation.x = 0.0;
-      marker.pose.orientation.y = 0.0;
-      marker.pose.orientation.z = 0.0;
-
-      marker.scale.x = abs(u[0]-l[0]);
-      marker.scale.y = abs(u[1]-l[1]);
-      marker.scale.z = abs(u[2]-l[2]);
-      marker.color.r = 0.0;
-      marker.color.g = 1.0;
-      marker.color.b = 0.0;
-      marker.color.a = 0.2;
-
-			marker.ns = "basic_shapes";
-			marker.id = i;
-			// Set the marker type.  Initially this is CUBE, and cycles between that and SPHERE, ARROW, and CYLINDER
-			marker.type = 1; //CUBE
-			// Set the marker action.  Options are ADD and DELETE
-			marker.action = visualization_msgs::Marker::ADD;
-      marker_array.markers.push_back(marker);
-    }
-  }
-  pub_corridor_.publish(marker_array);*/
 }
 
 
@@ -569,38 +486,6 @@ void WaypointFrame::setPose(Eigen::Vector3f  position, Eigen::Vector4f  quat)
   }
 }
 
-/*
-void WaypointFrame::display(const nav_msgs::msg::Path &msg, int order){
-	double dt = 0.01;
-	//Record File 
-	std::ofstream outFileX;
-	std::ofstream outFileY;
-	std::ofstream outFileZ;
-	std::string title = Deriv_title[order];
-	std::string der_app = append[order];
-	outFileX.open("tempX"+der_app +".dat");
-	outFileY.open("tempY"+der_app +".dat");
-	outFileZ.open("tempZ"+der_app +".dat");
-	for (int j=0; j< msg.poses.size(); j++){
-    geometry_msgs::PoseStamped ps = msg.poses[j];	
-    double time = ps.header.stamp.toSec();	
-    outFileX << time;
-		outFileX << " " << ps.pose.position.x << std::endl;
-		outFileY << time;
-		outFileY << " " <<ps.pose.position.y << std::endl;
-		outFileZ << time;
-		outFileZ << " " << ps.pose.position.z << std::endl;
-	}
-	outFileX.close();
-	outFileY.close();
-	outFileZ.close();
-	// VISUALIZATION
-  GnuplotPipe gp;
-	gp.sendLine("set title " + title);
-  gp.sendLine("plot 'tempX"+ der_app +".dat' , 'tempY"+ der_app +".dat', 'tempZ"+ der_app +".dat' ");
-}
-*/
-
 void WaypointFrame::setWpLabel()
 {
   {
@@ -669,41 +554,24 @@ void WaypointFrame::clear_map(){
   //Buttons RQT MAV MANAGER
 void WaypointFrame::motors_on_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
-	request->data = true;
-	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
 
 }
 
 void WaypointFrame::motors_off_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
 	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
-	request->data = false;
-	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
 
 }
 
 void WaypointFrame::hover_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
-	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
 
 }
 
 void WaypointFrame::land_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
-	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
 
 }
 
@@ -712,10 +580,6 @@ void WaypointFrame::takeoff_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
 	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
-	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-	auto result = client->async_send_request(request);
-      RCLCPP_INFO(node->get_logger(), "Sent Service");
-
 }
 
 void WaypointFrame::goto_push_button(){
@@ -727,39 +591,6 @@ void WaypointFrame::goto_push_button(){
 	else{
 		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	}
-	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
-	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
-  request->goal[0]  = ui_->x_doubleSpinBox_gt->value();
- 	request->goal[1] = ui_->y_doubleSpinBox_gt->value();
-  request->goal[2] = ui_->z_doubleSpinBox_gt->value();
-  request->goal[3]  = ui_->yaw_doubleSpinBox_gt->value();
-
-	auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Sent Service");
-
-	/*ros::NodeHandle nh;
-	std::string srvs_name;
-	if(relative_){
-		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
-	}
-	else{
-		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	}
-	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
-	mav_manager::Vec4 srv;
-  	srv.request.goal [0] = ui_->x_doubleSpinBox_gt->value();
- 	srv.request.goal [1] = ui_->y_doubleSpinBox_gt->value();
-  	srv.request.goal [2] = ui_->z_doubleSpinBox_gt->value();
-  	srv.request.goal [3] = ui_->yaw_doubleSpinBox_gt->value();
-	if (client.call(srv))
-	{
-		ROS_INFO("GoTo Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed GoTo ");
-	}		*/
 
 }
 
@@ -788,18 +619,6 @@ void WaypointFrame::serviceChanged(){
 
 void WaypointFrame::goHome_push_button(){
     boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
-	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
-  request->goal[0]  = 0.0;
- 	request->goal[1] = 0.0;
-  request->goal[2] = 0.5;
-  request->goal[3]  = 0.0;
-	auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Sent Service");
 
-
-}
+  }
 }
