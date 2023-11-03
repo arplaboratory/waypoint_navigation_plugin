@@ -51,7 +51,7 @@
 #include <std_srvs/Trigger.h>
 #include <std_msgs/Bool.h>
 #include <std_srvs/Empty.h>
-#include <mav_manager/Vec4.h>
+#include <mav_manager_srv/Vec4.h>
 #include <Eigen/Sparse>
 #include "ui_WaypointNavigation.h"
 #include <visualization_msgs/MarkerArray.h>

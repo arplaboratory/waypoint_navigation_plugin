@@ -25,8 +25,8 @@ if(rviz_QT_VERSION VERSION_LESS "5")
 
   # Header files that need Qt Moc pre-processing for use with Qt signals, etc:
   qt4_wrap_cpp(MOC_FILES
-    src/waypoint_nav_frame.h
-    src/waypoint_nav_tool.h
+    src/waypoint_nav_frame_ros1.h
+    src/waypoint_nav_tool_ros1.h
   )
 
   # Convert the Qt Signals and Slots for QWidget events
@@ -36,8 +36,8 @@ if(rviz_QT_VERSION VERSION_LESS "5")
 else()
   # Header files that need Qt Moc pre-processing for use with Qt signals, etc:
   qt5_wrap_cpp(MOC_FILES
-    src/waypoint_nav_frame.h
-    src/waypoint_nav_tool.h
+    src/waypoint_nav_frame_ros1.h
+    src/waypoint_nav_tool_ros1.h
   )
 
   # Convert the Qt Signals and Slots for QWidget events
@@ -50,8 +50,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Plugin Source
 set(SOURCE_FILES
-  src/waypoint_nav_frame.cpp
-  src/waypoint_nav_tool.cpp
+  src/waypoint_nav_frame_ros1.cpp
+  src/waypoint_nav_tool_ros1.cpp
   ${MOC_FILES}
 )
 
