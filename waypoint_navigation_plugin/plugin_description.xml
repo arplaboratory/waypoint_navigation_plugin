@@ -1,5 +1,5 @@
-<library path="waypoint_nav_plugin">
-  <class name="waypoint_nav_plugin/waypoint_nav_tool"
+<library path="waypoint_navigation_plugin">
+  <class name="waypoint_nav_plugin/WaypointNav"
          type="waypoint_nav_plugin::WaypointNavTool"
          base_class_type="rviz_common::Tool">
     <description>

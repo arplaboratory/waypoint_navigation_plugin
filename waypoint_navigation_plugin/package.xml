@@ -1,4 +1,4 @@
-<package format="2">
+<package format="3">
   <name>waypoint_navigation_plugin</name>
   <version>0.1.0</version>
   <description>
@@ -9,15 +9,36 @@
 
   <author>Dinesh Thakur</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
 
-  <depend>rviz</depend>
-  <depend>mav_manager</depend>
-  <depend>rosbag</depend>
-  <depend>std_srvs</depend>
+  <depend condition="$ROS_VERSION == 1">rviz</depend>
+  <depend condition="$ROS_VERSION == 1">mav_manager</depend>
+  <depend condition="$ROS_VERSION == 1">rosbag</depend>
+  <depend condition="$ROS_VERSION == 1">std_srvs</depend>
+
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+
+  <depend condition="$ROS_VERSION == 2">geometry_msgs</depend>
+  <depend condition="$ROS_VERSION == 2">rclcpp</depend>
+  <depend condition="$ROS_VERSION == 2">rviz_common</depend>
+  <depend condition="$ROS_VERSION == 2">rviz_rendering</depend>
+  <depend condition="$ROS_VERSION == 2">sensor_msgs</depend>
+  <depend condition="$ROS_VERSION == 2">rosbag2_cpp</depend>
+  <depend condition="$ROS_VERSION == 2">mav_manager_srv</depend>
+
+  <build_depend condition="$ROS_VERSION == 2">qtbase5-dev</build_depend>
+
+  <exec_depend condition="$ROS_VERSION == 2">libqt5-core</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">libqt5-gui</exec_depend>
+  <exec_depend condition="$ROS_VERSION == 2">libqt5-widgets</exec_depend>
+
+  <test_depend condition="$ROS_VERSION == 2">ament_lint_auto</test_depend>
+  <test_depend condition="$ROS_VERSION == 2">ament_lint_common</test_depend>
 
   <export>
-    <rosdoc config="${prefix}/rosdoc.yaml"/>
-    <rviz plugin="${prefix}/waypoint_nav_plugin_description.xml"/>
+    <rosdoc condition="$ROS_VERSION == 1" config="${prefix}/rosdoc.yaml"/>
+    <rviz condition="$ROS_VERSION == 1" plugin="${prefix}/waypoint_nav_plugin_description.xml"/>
+
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
   </export>
 </package>

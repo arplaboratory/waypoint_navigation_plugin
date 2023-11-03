@@ -136,7 +136,7 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /clicked_point
-    - Class: waypoint_nav_plugin/waypoint_nav_tool
+    - Class: waypoint_nav_plugin/WaypointNav
       WaypointsTool:
         default_height: 0
         frame_id: world

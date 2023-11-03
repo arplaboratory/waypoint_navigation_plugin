@@ -3,7 +3,6 @@
 ## TeleopPanel, ImuDisplay, and PlantFlagTool tutorials.
 
 cmake_minimum_required(VERSION 3.8)
-project(waypoint_nav_plugin)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -51,13 +50,13 @@ set(CMAKE_AUTOMOC ON)
 ## Here we specify the list of source files.
 ## The generated MOC files are included automatically as headers.
 set(SRC_FILES
-  src/waypoint_nav_frame.cpp
-  src/waypoint_nav_tool.cpp
+  src/waypoint_nav_frame_ros2.cpp
+  src/waypoint_nav_tool_ros2.cpp
 )
 
 set(${PROJECT_NAME}_HDRS
-    src/waypoint_nav_frame.hpp
-    src/waypoint_nav_tool.hpp
+    src/waypoint_nav_frame_ros2.hpp
+    src/waypoint_nav_tool_ros2.hpp
     src/gnuplot.h
 )
 
