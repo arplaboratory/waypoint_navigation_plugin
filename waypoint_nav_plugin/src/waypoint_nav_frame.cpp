@@ -160,13 +160,13 @@ void WaypointFrame::bern_enable(int b)
 
 void WaypointFrame::saveButtonClicked()
 {
-  QString filename = QFileDialog::getOpenFileName(0,tr("Open Bag"), "~/", tr("Bag Files (*.txt)"));
-  QFileInfo info(filename);
-  std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
+  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*.txt)"));
   if(filename == "")
    std::cout << " NO FILE NAME GIVEN!!!" <<std::endl;
   else
   {
+    QFileInfo info(filename);
+    std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
     wp_nav_tool_->savePoints(filn);
   }   
 }
