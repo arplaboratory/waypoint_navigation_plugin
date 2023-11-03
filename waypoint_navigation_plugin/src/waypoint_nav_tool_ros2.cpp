@@ -34,7 +34,7 @@
 //#include <OGRE/OgreEntity.h>
 #include <Ogre.h>
 //#include <OgrePrerequisites.h>
-#include "waypoint_nav_tool.hpp"
+#include "waypoint_nav_tool_ros2.hpp"
 #include <boost/bind.hpp>
 #include "rviz_rendering/viewport_projection_finder.hpp"
 #include <rviz_common/display_context.hpp>

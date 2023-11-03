@@ -58,7 +58,7 @@
 
 **/
 using std::placeholders::_1;
-#include "waypoint_nav_frame.hpp"
+#include "waypoint_nav_frame_ros2.hpp"
 namespace rviz_common::properties
 {
 class VectorProperty;

@@ -41,7 +41,7 @@
 //#include <rosbag/bag.h>
 //#include <rosbag/view.h>
 #include <fstream>
-#include "waypoint_nav_tool.hpp"
+#include "waypoint_nav_tool_ros2.hpp"
 //#include "waypoint_nav_frame.h"
 #include <mav_manager_srv/srv/vec4.hpp>
 #include <OGRE/OgreVector3.h>
