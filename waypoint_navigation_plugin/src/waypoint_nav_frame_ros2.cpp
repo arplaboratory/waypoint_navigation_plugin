@@ -160,7 +160,7 @@ void WaypointFrame::bern_enable(int b)
 
 void WaypointFrame::saveButtonClicked()
 {
-  QString filename = QFileDialog::getOpenFileName(0,tr("Open Bag"), "~/", tr("Bag Files (*.txt)"));
+  QString filename = QFileDialog::getSaveFileName(0,tr("Save Bag"), "waypoints", tr("Bag Files (*.txt)"));
   QFileInfo info(filename);
   std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
   if(filename == "")
