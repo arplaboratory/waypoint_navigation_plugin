@@ -561,10 +561,10 @@ nav_msgs::msg::Path WaypointNavTool::getPath(){
 
     Ogre::Quaternion quat;
     //quat = sn_it->second->getOrientation();
-    pos.pose.orientation.x = 0;//quat.x;
-    pos.pose.orientation.y = 0;//quat.y;
-    pos.pose.orientation.z = 0;//quat.z;
-    pos.pose.orientation.w = 1;//quat.w;
+    pos.pose.orientation.x = quat.x;
+    pos.pose.orientation.y = quat.y;
+    pos.pose.orientation.z = quat.z;
+    pos.pose.orientation.w = quat.w;
 
     path.poses.push_back(pos);
   }
