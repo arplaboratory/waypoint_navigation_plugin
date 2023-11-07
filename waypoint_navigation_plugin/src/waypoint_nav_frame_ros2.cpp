@@ -246,9 +246,9 @@ void WaypointFrame::publishButtonClicked()
 {
   if(!getTopicOveride()){
     std::string topic_name = "/waypoints";
-    /*if(getBernEnable()){
+    if(getBernEnable()){
       topic_name = "/b_waypoints";
-    }*/
+    }
     wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
     //std::this_thread::sleep_for(std::chrono::milliseconds(300));
   }
