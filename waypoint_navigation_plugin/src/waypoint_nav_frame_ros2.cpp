@@ -704,6 +704,7 @@ void WaypointFrame::clear_map(){
 	auto client = node->create_client<std_srvs::srv::Empty>("/voxblox_node/clear_map");
 	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
 	auto result = client->async_send_request(request);
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 }
 
 
@@ -714,7 +715,8 @@ void WaypointFrame::motors_on_push_button(){
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = true;
 	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 
 }
 
@@ -724,8 +726,8 @@ void WaypointFrame::motors_off_push_button(){
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = false;
 	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 }
 
 void WaypointFrame::hover_push_button(){
@@ -734,7 +736,8 @@ void WaypointFrame::hover_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 
 }
 
@@ -745,7 +748,7 @@ void WaypointFrame::land_push_button(){
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
     RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 }
 
 void WaypointFrame::takeoff_push_button(){
@@ -755,8 +758,8 @@ void WaypointFrame::takeoff_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-      RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 }
 
 void WaypointFrame::goto_push_button(){
@@ -778,6 +781,7 @@ void WaypointFrame::goto_push_button(){
 
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 
 	/*ros::NodeHandle nh;
 	std::string srvs_name;
@@ -840,7 +844,7 @@ void WaypointFrame::goHome_push_button(){
   request->goal[3]  = 0.0;
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  auto status = result.wait_for(std::chrono::seconds(0.3));
 
 }
 }
