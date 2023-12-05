@@ -45,7 +45,6 @@
 //#include "waypoint_nav_frame.h"
 #include <mav_manager_srv/srv/vec4.hpp>
 #include <OGRE/OgreVector3.h>
-
 #include <QFileDialog>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -704,6 +703,14 @@ void WaypointFrame::clear_map(){
 	auto client = node->create_client<std_srvs::srv::Empty>("/voxblox_node/clear_map");
 	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
 	auto result = client->async_send_request(request);
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "Success callback Clear map");
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "Failed callback Clear map");  
+  }
 }
 
 
@@ -714,7 +721,15 @@ void WaypointFrame::motors_on_push_button(){
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = true;
 	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 
 }
 
@@ -724,8 +739,15 @@ void WaypointFrame::motors_off_push_button(){
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = false;
 	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 }
 
 void WaypointFrame::hover_push_button(){
@@ -734,7 +756,15 @@ void WaypointFrame::hover_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 
 }
 
@@ -745,7 +775,14 @@ void WaypointFrame::land_push_button(){
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
     RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 }
 
 void WaypointFrame::takeoff_push_button(){
@@ -755,8 +792,15 @@ void WaypointFrame::takeoff_push_button(){
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
-      RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 }
 
 void WaypointFrame::goto_push_button(){
@@ -778,30 +822,14 @@ void WaypointFrame::goto_push_button(){
 
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-
-	/*ros::NodeHandle nh;
-	std::string srvs_name;
-	if(relative_){
-		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
-	}
-	else{
-		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	}
-	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
-	mav_manager::Vec4 srv;
-  	srv.request.goal [0] = ui_->x_doubleSpinBox_gt->value();
- 	srv.request.goal [1] = ui_->y_doubleSpinBox_gt->value();
-  	srv.request.goal [2] = ui_->z_doubleSpinBox_gt->value();
-  	srv.request.goal [3] = ui_->yaw_doubleSpinBox_gt->value();
-	if (client.call(srv))
-	{
-		ROS_INFO("GoTo Success");
-	}
-	else
-	{	
-		ROS_ERROR("Failed GoTo ");
-	}		*/
-
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 }
 
 void WaypointFrame::relativeChanged(int b){
@@ -840,7 +868,14 @@ void WaypointFrame::goHome_push_button(){
   request->goal[3]  = 0.0;
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+  rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{    
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
+  }
 
 }
 }
