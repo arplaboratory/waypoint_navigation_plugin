@@ -107,7 +107,6 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   connect(ui_->bern_enable, SIGNAL(stateChanged(int)), this, SLOT(bern_enable(int)));
   connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
-  connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
   
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
