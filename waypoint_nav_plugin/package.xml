@@ -18,6 +18,7 @@
   <depend>sensor_msgs</depend>
   <depend>rosbag2_cpp</depend>
   <depend>mav_manager_srv</depend>
+  <depend>quadrotor_msgs</depend>
 
   <build_depend>qtbase5-dev</build_depend>
 
