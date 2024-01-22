@@ -810,6 +810,16 @@ void WaypointFrame::exec_circle_button(){
 
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Circle Request");
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
+  }
+  else{
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srv_name.c_str());
+  }
+
 }
 
 void WaypointFrame::exec_lissajous_button(){
@@ -840,6 +850,15 @@ void WaypointFrame::exec_lissajous_button(){
 
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Lissajous Request");
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
+  }
+  else{
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srv_name.c_str());
+  }
 }
 
 void WaypointFrame::relativeChanged(int b){
