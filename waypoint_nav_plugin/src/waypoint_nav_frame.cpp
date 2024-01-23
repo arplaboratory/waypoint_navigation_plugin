@@ -252,7 +252,7 @@ void WaypointFrame::publishButtonClicked()
       topic_name = "/b_waypoints";
     }*/
     wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
-    //std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
   nav_msgs::msg::Path path;
   path = wp_nav_tool_->getPath();
@@ -812,7 +812,7 @@ void WaypointFrame::exec_circle_button(){
   RCLCPP_INFO(node->get_logger(), "Sent Circle Request");
 
   if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(2000))==
     rclcpp::FutureReturnCode::SUCCESS){
     RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
   }
@@ -852,7 +852,7 @@ void WaypointFrame::exec_lissajous_button(){
   RCLCPP_INFO(node->get_logger(), "Sent Lissajous Request");
 
   if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(2000))==
     rclcpp::FutureReturnCode::SUCCESS){
     RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
   }
@@ -898,12 +898,12 @@ void WaypointFrame::goHome_push_button(){
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
   if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(2000))==
     rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
   }
   else{
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srv_name.c_str());
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
   }
 
 
