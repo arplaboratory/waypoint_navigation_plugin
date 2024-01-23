@@ -897,6 +897,14 @@ void WaypointFrame::goHome_push_button(){
   request->goal[3]  = 0.0;
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
+  }
+  else{
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srv_name.c_str());
+  }
 
 
 }
