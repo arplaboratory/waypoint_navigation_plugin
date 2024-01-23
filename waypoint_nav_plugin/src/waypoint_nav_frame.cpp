@@ -53,7 +53,7 @@
 namespace waypoint_nav_plugin
 {
 
-WaypointFrame::WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr, 
+WaypointFrame::WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
 interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent, WaypointNavTool* wp_tool)
   : QWidget(parent)
   , context_(context)
@@ -68,10 +68,10 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
 {
   //scene_manager_ = context_->getSceneManager();
 
-  // set up the GUI 
+  // set up the GUI
   node = rclcpp::Node::make_shared("wp_node");
   ui_->setupUi(this);
-  pub_corridor_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("corridors", 1); 
+  pub_corridor_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("corridors", 1);
   wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("waypoints", 1);
   path_clear_pub_ = node->create_publisher<std_msgs::msg::Bool>("/clear", 1);
   //connect the Qt signals and slots
@@ -90,10 +90,10 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
 
   connect(ui_->save_wp_button, SIGNAL(clicked()), this, SLOT(saveButtonClicked()));
   connect(ui_->load_wp_button, SIGNAL(clicked()), this, SLOT(loadButtonClicked()));
-  
+
   connect(ui_->perch, SIGNAL(clicked()), this, SLOT(perchClicked()));
 
-  //ROSRUN RQT Mav Manager Line topics 
+  //ROSRUN RQT Mav Manager Line topics
   connect(ui_->robot_name_line_edit, SIGNAL(editingFinished()), this, SLOT(robotChanged()));
   connect(ui_->node_name_line_edit, SIGNAL(editingFinished()), this, SLOT(serviceChanged()));
   //Buttons
@@ -110,9 +110,11 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   connect(ui_->topic_overide, SIGNAL(stateChanged(int)), this, SLOT(topic_enable(int)));
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
   connect(ui_->clear_path, SIGNAL(clicked()), this, SLOT(clear_path()));
-  
+  connect(ui_->exec_circle_button, SIGNAL(clicked()), this, SLOT(exec_circle_button()));
+  connect(ui_->exec_lissajous_button, SIGNAL(clicked()), this, SLOT(exec_lissajous_button()));
+
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
-  
+
   node->declare_parameter("/"+ robot_name+"/"+"replan",false);
   node->declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
 	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
@@ -168,7 +170,7 @@ void WaypointFrame::saveButtonClicked()
     QFileInfo info(filename);
     std::string filn = info.absolutePath().toStdString() + "/" + info.baseName().toStdString() + ".txt";
     wp_nav_tool_->savePoints(filn);
-  }   
+  }
 }
 
 void WaypointFrame::loadButtonClicked()
@@ -323,7 +325,7 @@ void WaypointFrame::replan_enable(int b)
 	 replan_enable_ = false;
   }
   //    wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("/"+ robot_name +topic_name, 1);
-  node->set_parameters({rclcpp::Parameter("/"+ robot_name+"/"+"replan", replan_enable_)}); 
+  node->set_parameters({rclcpp::Parameter("/"+ robot_name+"/"+"replan", replan_enable_)});
   //nh_.setParam("/"+ robot_name+"/"+"replan",replan_enable_);
 }
 
@@ -519,7 +521,7 @@ void WaypointFrame::getPose(Eigen::Vector3f * position, Eigen::Vector4f * quat)
   }
 }
 
-//Quaternion is scalar last 
+//Quaternion is scalar last
 void WaypointFrame::setPose(Eigen::Vector3f  position, Eigen::Vector4f  quat)
 {
   {
@@ -572,7 +574,7 @@ void WaypointFrame::setPose(Eigen::Vector3f  position, Eigen::Vector4f  quat)
 /*
 void WaypointFrame::display(const nav_msgs::msg::Path &msg, int order){
 	double dt = 0.01;
-	//Record File 
+	//Record File
 	std::ofstream outFileX;
 	std::ofstream outFileY;
 	std::ofstream outFileZ;
@@ -582,8 +584,8 @@ void WaypointFrame::display(const nav_msgs::msg::Path &msg, int order){
 	outFileY.open("tempY"+der_app +".dat");
 	outFileZ.open("tempZ"+der_app +".dat");
 	for (int j=0; j< msg.poses.size(); j++){
-    geometry_msgs::PoseStamped ps = msg.poses[j];	
-    double time = ps.header.stamp.toSec();	
+    geometry_msgs::PoseStamped ps = msg.poses[j];
+    double time = ps.header.stamp.toSec();
     outFileX << time;
 		outFileX << " " << ps.pose.position.x << std::endl;
 		outFileY << time;
@@ -699,7 +701,7 @@ void WaypointFrame::hover_push_button(){
 
 void WaypointFrame::land_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
+	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
 	auto result = client->async_send_request(request);
@@ -757,10 +759,106 @@ void WaypointFrame::goto_push_button(){
 		ROS_INFO("GoTo Success");
 	}
 	else
-	{	
+	{
 		ROS_ERROR("Failed GoTo ");
 	}		*/
 
+}
+
+bool WaypointFrame::extractFloats(const std::string& input, std::vector<float>& floats, int expectedCount) {
+    std::istringstream ss(input);
+    std::string token;
+
+    while (std::getline(ss, token, ',')) {
+        try {
+            float value = std::stof(token);
+            floats.push_back(value);
+        } catch (const std::invalid_argument& e) {
+            // Invalid float found in the string
+            return false;
+        }
+    }
+
+    // Check if the number of floats matches the expected count
+    if (floats.size() != expectedCount) {
+        return false;
+    }
+
+    return true;
+}
+
+
+void WaypointFrame::exec_circle_button(){
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  std::string srv_name = "/" + robot_name + "/trackers_manager/transition";
+
+	auto client = node->create_client<quadrotor_msgs::srv::Transition>(srv_name);
+	auto request = std::make_shared<quadrotor_msgs::srv::Transition::Request>();
+
+  std::string params = ui_->circle_params->text().toStdString();
+  std::vector<float> params_float;
+  if (!extractFloats(params, params_float, 4)) {
+    RCLCPP_ERROR(node->get_logger(), "incorrect circle planner arguments");
+    return;
+  }
+
+  request->tracker = "std_trackers/CirclePlanner";
+  request->planner_goal.circle_planner_goal.ax = params_float[0];
+  request->planner_goal.circle_planner_goal.ay = params_float[1];
+  request->planner_goal.circle_planner_goal.t = params_float[2];
+  request->planner_goal.circle_planner_goal.duration.sec = params_float[3];
+
+	auto result = client->async_send_request(request);
+  RCLCPP_INFO(node->get_logger(), "Sent Circle Request");
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
+  }
+  else{
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srv_name.c_str());
+  }
+
+}
+
+void WaypointFrame::exec_lissajous_button(){
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  std::string srv_name = "/" + robot_name + "/trackers_manager/transition";
+
+	auto client = node->create_client<quadrotor_msgs::srv::Transition>(srv_name);
+	auto request = std::make_shared<quadrotor_msgs::srv::Transition::Request>();
+
+  std::string params = ui_->lissajous_params->text().toStdString();
+  std::vector<float> params_float;
+  if (!extractFloats(params, params_float, 10)) {
+    RCLCPP_ERROR(node->get_logger(), "incorrect lissajous planner arguments");
+    return;
+  }
+
+  request->tracker = "std_trackers/LissajousPlanner";
+  request->planner_goal.lissajous_planner_goal.x_amp = params_float[0];
+  request->planner_goal.lissajous_planner_goal.y_amp = params_float[1];
+  request->planner_goal.lissajous_planner_goal.z_amp = params_float[2];
+  request->planner_goal.lissajous_planner_goal.x_num_periods = params_float[3];
+  request->planner_goal.lissajous_planner_goal.y_num_periods = params_float[4];
+  request->planner_goal.lissajous_planner_goal.z_num_periods = params_float[5];
+  request->planner_goal.lissajous_planner_goal.yaw_num_periods = params_float[6];
+  request->planner_goal.lissajous_planner_goal.period = params_float[7];
+  request->planner_goal.lissajous_planner_goal.num_cycles = params_float[8];
+  request->planner_goal.lissajous_planner_goal.ramp_time = params_float[9];
+
+	auto result = client->async_send_request(request);
+  RCLCPP_INFO(node->get_logger(), "Sent Lissajous Request");
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+    std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
+    rclcpp::FutureReturnCode::SUCCESS){
+    RCLCPP_INFO(node->get_logger(), "%s Success callback", srv_name.c_str());
+  }
+  else{
+    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srv_name.c_str());
+  }
 }
 
 void WaypointFrame::relativeChanged(int b){
@@ -774,7 +872,7 @@ void WaypointFrame::relativeChanged(int b){
 }
 
 
-void WaypointFrame::robotChanged(){ 
+void WaypointFrame::robotChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();

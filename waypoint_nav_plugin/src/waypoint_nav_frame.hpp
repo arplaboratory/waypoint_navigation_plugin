@@ -67,6 +67,7 @@
 #include <rclcpp/serialization.hpp>
 #include <rosbag2_cpp/storage_options.hpp>
 #include <OgrePrerequisites.h>
+#include <quadrotor_msgs/srv/transition.hpp>
 
 typedef struct {
     int derivOrder, vertexNum;
@@ -131,7 +132,7 @@ public:
 
   bool getTopicOveride();
   bool getBernEnable();
-  
+
   double getDefaultHeight();
   double getTime();
   bool get2Ddisplay();
@@ -183,7 +184,11 @@ private Q_SLOTS:
   void hover_push_button();
   void clear_map();
   void clear_path();
+  void exec_circle_button();
+  void exec_lissajous_button();
    //Bernstein Check boxes
+
+  bool extractFloats(const std::string& input, std::vector<float>& floats, int expectedCount);
 
 
   //Inequality cahgned for each double box
@@ -204,7 +209,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr wp_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_corridor_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr path_clear_pub_;
-  
+
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ path_listen_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ acc_listen_;
@@ -222,7 +227,7 @@ private:
   //default height the waypoint must be placed at
   double default_height_;
   double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
-  bool display_2D = false; // Jeff additional boolean 
+  bool display_2D = false; // Jeff additional boolean
   bool relative_ = true;
   bool bern_enable_ = false;
   bool replan_enable_ = false;
