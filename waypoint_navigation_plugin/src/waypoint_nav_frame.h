@@ -163,6 +163,7 @@ private Q_SLOTS:
   void land_push_button();
   void takeoff_push_button();
   void goto_push_button();
+  void turn_push_button();
   void relativeChanged(int b);
   void robotChanged();
   void serviceChanged();
@@ -192,6 +193,8 @@ private:
   ros::Publisher wp_pub_;
   ros::Publisher pub_corridor_;
   ros::Publisher path_clear_pub_;
+
+  ros::Publisher turn_yaw_sucess;
   
   ros::Subscriber path_listen_;
   ros::Subscriber vel_listen_;

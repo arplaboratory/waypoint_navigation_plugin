@@ -256,15 +256,15 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     int_marker.header.frame_id = frame_->getFrameId().toStdString();
 
     int_marker.pose = pos.pose;
-    int_marker.scale = 2;
+    int_marker.scale = 0.75;
     int_marker.name = wp_name_str;
     int_marker.description = wp_name_str;
 
     // create a cylinder marker
     visualization_msgs::Marker cyn_marker;
     cyn_marker.type = visualization_msgs::Marker::CYLINDER;
-    cyn_marker.scale.x = 2.0;
-    cyn_marker.scale.y = 2.0;
+    cyn_marker.scale.x = 0.2;
+    cyn_marker.scale.y = 0.2;
     cyn_marker.scale.z = 0.2;
     cyn_marker.color.r = 0.5;
     cyn_marker.color.g = 0.5;

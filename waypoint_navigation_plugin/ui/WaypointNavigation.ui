@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>575</width>
-    <height>831</height>
+    <width>1029</width>
+    <height>1205</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,6 @@
    <string notr="true"/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="1" colspan="3">
-    <widget class="QPushButton" name="goto_push_button">
-     <property name="text">
-      <string>Go To</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout_7">
      <item>
@@ -555,6 +548,20 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="7" column="2" colspan="2">
+    <widget class="QPushButton" name="goto_push_button">
+     <property name="text">
+      <string>Go To</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <widget class="QPushButton" name="turn_yaw_push_button">
+     <property name="text">
+      <string>Turn 180</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

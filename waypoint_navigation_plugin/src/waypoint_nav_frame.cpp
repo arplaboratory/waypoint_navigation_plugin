@@ -74,6 +74,9 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   pub_corridor_ = nh_.advertise<visualization_msgs::MarkerArray>("corridors", 1); 
   wp_pub_ = nh_.advertise<nav_msgs::Path>("waypoints", 1);
   path_clear_pub_ = nh_.advertise<std_msgs::Bool>("/clear", 1);
+
+  turn_yaw_sucess = nh_.advertise<std_msgs::Bool>("/turn_yaw_sucess_pub", 1);
+
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
   connect(ui_->topic_line_edit, SIGNAL(editingFinished()), this, SLOT(topicChanged()));
@@ -104,6 +107,7 @@ WaypointFrame::WaypointFrame(rviz::DisplayContext *context, std::map<int, Ogre::
   connect(ui_->goto_push_button, SIGNAL(clicked()), this, SLOT(goto_push_button()));
   connect(ui_->relative_checkbox, SIGNAL(stateChanged(int)), this, SLOT(relativeChanged(int)));
   connect(ui_->go_home_button, SIGNAL(clicked()), this, SLOT(goHome_push_button()));
+  connect(ui_->turn_yaw_push_button, SIGNAL(clicked()), this, SLOT(turn_push_button()));
   connect(ui_->hover, SIGNAL(clicked()), this, SLOT(hover_push_button()));
   connect(ui_->bern_enable, SIGNAL(stateChanged(int)), this, SLOT(bern_enable(int)));
   connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
@@ -852,7 +856,7 @@ QString WaypointFrame::getOutputTopic()
 
   //Clear Map
 void WaypointFrame::clear_map(){
-	ros::ServiceClient client = nh_.serviceClient<std_srvs::Empty>("/"+ robot_name+"/voxblox_node/clear_map");
+	ros::ServiceClient client = nh_.serviceClient<std_srvs::Empty>("/voxblox_node/clear_map");
 	std_srvs::Empty srv;
   //client.waitForExistence();
   if (client.call(srv)){
@@ -967,6 +971,37 @@ void WaypointFrame::goto_push_button(){
 		ROS_ERROR("Failed GoTo ");
 	}		
 
+}
+
+void WaypointFrame::turn_push_button()
+{
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+	ros::NodeHandle nh;
+  std::string srvs_name;
+	if(relative_){
+		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
+	}
+	else{
+		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	}
+	ros::ServiceClient client = nh.serviceClient<mav_manager::Vec4>(srvs_name);
+	mav_manager::Vec4 srv;
+  	srv.request.goal [0] = 1.0;
+ 	srv.request.goal [1] = 1.0;
+  	srv.request.goal [2] = 0.0;
+  	srv.request.goal [3] = -3.14;
+	if (client.call(srv))
+	{
+		ROS_INFO("GoTo Success");
+
+    std_msgs::Bool push_yaw;
+    push_yaw.data = true;
+    turn_yaw_sucess.publish(push_yaw);
+	}
+	else
+	{	
+		ROS_ERROR("Failed GoTo ");
+	}		
 }
 
 void WaypointFrame::relativeChanged(int b){
