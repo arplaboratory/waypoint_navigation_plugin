@@ -98,6 +98,10 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   connect(ui_->node_name_line_edit, SIGNAL(editingFinished()), this, SLOT(serviceChanged()));
   //Buttons
   connect(ui_->motors_on_push_button, SIGNAL(clicked()), this, SLOT(motors_on_push_button()));
+  connect(ui_->payload_hover_button, SIGNAL(clicked()), this, SLOT(payload_hover_button()));
+  connect(ui_->nmpc_on_button, SIGNAL(clicked()), this, SLOT(nmpc_on_button()));
+  connect(ui_->nmpc_off_button, SIGNAL(clicked()), this, SLOT(nmpc_off_button()));
+
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
   connect(ui_->land_push_button, SIGNAL(clicked()), this, SLOT(land_push_button()));
   connect(ui_->takeoff_push_button, SIGNAL(clicked()), this, SLOT(takeoff_push_button()));
@@ -674,10 +678,78 @@ void WaypointFrame::motors_on_push_button(){
 	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = true;
-	auto result = client->async_send_request(request);
-    RCLCPP_INFO(node->get_logger(), "Sent Service");
 
+    RCLCPP_INFO(node->get_logger(), "sending motors on");
+    auto result = client->async_send_request(request);
+
+    if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+        std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(5000))==
+        rclcpp::FutureReturnCode::SUCCESS){
+        RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+    }
+    else{
+        RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
+    }
 }
+
+void WaypointFrame::payload_hover_button(){
+	std::string srvs_name = "/"+ robot_name + "/trackers_manager/transition";
+	auto client = node->create_client<quadrotor_msgs::srv::Transition>(srvs_name);
+	auto request = std::make_shared<quadrotor_msgs::srv::Transition::Request>();
+	request->tracker = "std_trackers/HoverPlanner";
+
+  RCLCPP_INFO(node->get_logger(), "starting payload hover planner");
+  auto result = client->async_send_request(request);
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+      std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(5000))==
+      rclcpp::FutureReturnCode::SUCCESS){
+      RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{
+      RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
+  }
+}
+
+
+void WaypointFrame::nmpc_on_button(){
+	std::string srvs_name = "/"+ robot_name + "/activate_nmpc_controller";
+	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+	request->data = true;
+
+  RCLCPP_INFO(node->get_logger(), "turning NMPC ON");
+  auto result = client->async_send_request(request);
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+      std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(5000))==
+      rclcpp::FutureReturnCode::SUCCESS){
+      RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{
+      RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
+  }
+}
+
+void WaypointFrame::nmpc_off_button(){
+	std::string srvs_name = "/"+ robot_name + "/activate_nmpc_controller";
+	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+	request->data = false;
+
+  RCLCPP_INFO(node->get_logger(), "turning NMPC ON");
+  auto result = client->async_send_request(request);
+
+  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
+      std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(5000))==
+      rclcpp::FutureReturnCode::SUCCESS){
+      RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
+  }
+  else{
+      RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());
+  }
+}
+
 
 void WaypointFrame::motors_off_push_button(){
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
@@ -700,6 +772,8 @@ void WaypointFrame::hover_push_button(){
 }
 
 void WaypointFrame::land_push_button(){
+  nmpc_off_button();
+  
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
 	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";
 	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
@@ -789,6 +863,7 @@ bool WaypointFrame::extractFloats(const std::string& input, std::vector<float>& 
 
 
 void WaypointFrame::exec_circle_button(){
+  RCLCPP_WARN_STREAM(node->get_logger(), "HERE");
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   std::string srv_name = "/" + robot_name + "/trackers_manager/transition";
 
@@ -801,6 +876,11 @@ void WaypointFrame::exec_circle_button(){
     RCLCPP_ERROR(node->get_logger(), "incorrect circle planner arguments");
     return;
   }
+
+  RCLCPP_WARN_STREAM(node->get_logger(), "circle ax " << params_float[0]);
+  RCLCPP_WARN_STREAM(node->get_logger(), "circle ay " << params_float[1]);
+  RCLCPP_WARN_STREAM(node->get_logger(), "circle t " << params_float[2]);
+  RCLCPP_WARN_STREAM(node->get_logger(), "circle duration sec " << params_float[3]);
 
   request->tracker = "std_trackers/CirclePlanner";
   request->planner_goal.circle_planner_goal.ax = params_float[0];

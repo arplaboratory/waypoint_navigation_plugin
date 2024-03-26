@@ -220,6 +220,20 @@
    <item row="6" column="0" colspan="5">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
+      <widget class="QPushButton" name="nmpc_on_button">
+       <property name="text">
+        <string>NMPC ON</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="nmpc_off_button">
+       <property name="text">
+        <string>NMPC OFF</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="clear_path">
        <property name="text">
         <string>clear_path</string>
@@ -288,6 +302,13 @@
       <widget class="QPushButton" name="hover">
        <property name="text">
         <string>Hover</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="payload_hover_button">
+       <property name="text">
+        <string>PayloadHover</string>
        </property>
       </widget>
      </item>

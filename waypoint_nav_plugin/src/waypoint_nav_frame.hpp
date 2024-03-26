@@ -173,6 +173,9 @@ private Q_SLOTS:
 
   //Buttons RQT MAV MANAGER
   void motors_on_push_button();
+  void payload_hover_button();
+  void nmpc_on_button();
+  void nmpc_off_button();
   void motors_off_push_button();
   void land_push_button();
   void takeoff_push_button();
