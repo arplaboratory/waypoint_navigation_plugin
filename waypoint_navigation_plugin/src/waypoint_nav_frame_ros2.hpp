@@ -67,6 +67,9 @@
 #include <rclcpp/serialization.hpp>
 #include <rosbag2_cpp/storage_options.hpp>
 #include <OgrePrerequisites.h>
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
+#include <Eigen/Geometry>
 
 typedef struct {
     int derivOrder, vertexNum;
@@ -143,6 +146,9 @@ public:
   std::vector<waypoint_ineq_const> ineq_list;
   void push_newIneq_const();
   void ineqChanged(double val,int mode, int axis);
+  Eigen::Quaternionf getQuatTransform();
+  bool getLocalFrameStatus();
+
 protected:
 
   Ui::WaypointNavigationWidget *ui_;
@@ -177,12 +183,14 @@ private Q_SLOTS:
   void takeoff_push_button();
   void goto_push_button();
   void relativeChanged(int b);
+  void originChanged(int b);
   void robotChanged();
   void serviceChanged();
   void goHome_push_button();
   void hover_push_button();
   void clear_map();
   void clear_path();
+  void tf2_callback();
    //Bernstein Check boxes
 
 
@@ -204,6 +212,9 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr wp_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_corridor_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr path_clear_pub_;
+  rclcpp::TimerBase::SharedPtr timer_{nullptr};
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ path_listen_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
@@ -222,6 +233,7 @@ private:
   //default height the waypoint must be placed at
   double default_height_;
   double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
+  double yaw_init_ = 0.0;
   bool display_2D = false; // Jeff additional boolean 
   bool relative_ = true;
   bool bern_enable_ = false;
@@ -244,6 +256,8 @@ private:
   visualization_msgs::msg::MarkerArray marker_array;
   std::string selected_marker_name_;
 
+  Eigen::Quaternionf quat_transform_;
+  bool local_frame_ = false;
 };
 
 }

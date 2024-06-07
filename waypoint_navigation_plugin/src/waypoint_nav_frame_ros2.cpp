@@ -64,6 +64,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   , default_height_(0.0)
   , selected_marker_name_("waypoint1")
   , wp_nav_tool_(wp_tool)
+  , quat_transform_(Eigen::Quaternionf::Identity())
 {
   //scene_manager_ = context_->getSceneManager();
 
@@ -73,6 +74,10 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   pub_corridor_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("corridors", 1); 
   wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("waypoints", 1);
   path_clear_pub_ = node->create_publisher<std_msgs::msg::Bool>("/clear", 1);
+  tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+  // quat_transform_ = Eigen::Quaternionf::Identity();
+
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
   connect(ui_->topic_line_edit, SIGNAL(editingFinished()), this, SLOT(topicChanged()));
@@ -102,6 +107,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   connect(ui_->takeoff_push_button, SIGNAL(clicked()), this, SLOT(takeoff_push_button()));
   connect(ui_->goto_push_button, SIGNAL(clicked()), this, SLOT(goto_push_button()));
   connect(ui_->relative_checkbox, SIGNAL(stateChanged(int)), this, SLOT(relativeChanged(int)));
+  connect(ui_->local_frame, SIGNAL(stateChanged(int)), this, SLOT(originChanged(int)));
   connect(ui_->go_home_button, SIGNAL(clicked()), this, SLOT(goHome_push_button()));
   connect(ui_->hover, SIGNAL(clicked()), this, SLOT(hover_push_button()));
   connect(ui_->bern_enable, SIGNAL(stateChanged(int)), this, SLOT(bern_enable(int)));
@@ -116,6 +122,10 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
 	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	//vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	//acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
+
+  // Call tf2_callback() function every second
+  timer_ = node->create_wall_timer(std::chrono::seconds(1), std::bind(&WaypointFrame::tf2_callback, this));
+
 }
 
 WaypointFrame::~WaypointFrame()
@@ -369,6 +379,16 @@ void WaypointFrame::poseChanged(double val)
   Eigen::Vector3f pos_eigen;
   Eigen::Vector4f quat_eigen;
   getPose(&pos_eigen, &quat_eigen);
+
+  // if (local_frame_){
+
+  //   rclcpp::get_logger("ROTATING FLAG");
+  //   Eigen::Quaternionf quat(quat_eigen(3), quat_eigen(0),quat_eigen(1), quat_eigen(2));
+  //   pos_eigen = quat_transform_ * pos_eigen;
+  //   quat = quat_transform_ * quat;
+  //   quat_eigen = {quat.x(), quat.y(), quat.z(), quat.w()};
+
+  // }
   bool succ = wp_nav_tool_->setServerPose(std::stoi(selected_marker_name_.substr(8)), pos_eigen, quat_eigen);
 }
 
@@ -481,6 +501,9 @@ void WaypointFrame::frameChanged()
       {
         int_marker.header.frame_id = new_frame.toStdString();
         server_->setPose(wp_name_str, int_marker.pose, int_marker.header);
+        // Eigen::Vector3f pos(int_marker.pose.x,int_marker.pose.y,int_marker.pose.z);
+        // Eigen::Quaternionf q(int_marker.header.w, int_marker.header.x, int_marker.header.y, int_marker.header.z)
+        // bool succ = wp_nav_tool_->setServerPose(std::stoi(wp_name_str.substr(8)), pos, q);
       }
     }
     server_->applyChanges();
@@ -802,7 +825,48 @@ void WaypointFrame::takeoff_push_button(){
   }
 }
 
+void WaypointFrame::tf2_callback(){
+
+  RCLCPP_INFO(node->get_logger(), "in tf2_callback");
+  if (local_frame_){
+    RCLCPP_INFO(node->get_logger(), "GOTO in Local Frame");
+    geometry_msgs::msg::TransformStamped t;
+    
+    try {
+          t = tf_buffer_->lookupTransform(
+            "FLU", "world" ,                       
+            tf2::TimePointZero);
+              RCLCPP_INFO(node->get_logger(), "FOUND TRANSFORM");
+
+        } catch (const tf2::TransformException & ex) {
+          RCLCPP_INFO(
+            node->get_logger(), "Could not transform %s to %s: %s",
+            "world", "FLU", ex.what());
+          return;
+        }
+  // tf_buffer_->clear();
+  
+  quat_transform_ = Eigen::Quaternionf(t.transform.rotation.w,
+                                      t.transform.rotation.x,
+                                      t.transform.rotation.y,
+                                      t.transform.rotation.z);
+  quat_transform_ = quat_transform_.inverse();
+  
+  RCLCPP_INFO(node->get_logger(), "Set TRANSFORM");
+  yaw_init_ = std::atan2(2. * (quat_transform_.w() * quat_transform_.z() + quat_transform_.x() * quat_transform_.y()), 1. - 2. * (quat_transform_.y() * quat_transform_.y() + quat_transform_.z() * quat_transform_.z()));
+
+  }
+}
+
 void WaypointFrame::goto_push_button(){
+  
+  Eigen::Vector3f goalPos(ui_->x_doubleSpinBox_gt->value(),
+                          ui_->y_doubleSpinBox_gt->value(),
+                          ui_->z_doubleSpinBox_gt->value());
+  
+  goalPos = quat_transform_ * goalPos;
+  double yaw = ui_->yaw_doubleSpinBox_gt->value();
+  
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	if(relative_){
@@ -810,14 +874,15 @@ void WaypointFrame::goto_push_button(){
 	}
 	else{
 		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+    yaw-=yaw_init_;
 	}
 	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
 	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
 	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
-  request->goal[0]  = ui_->x_doubleSpinBox_gt->value();
- 	request->goal[1] = ui_->y_doubleSpinBox_gt->value();
-  request->goal[2] = ui_->z_doubleSpinBox_gt->value();
-  request->goal[3]  = ui_->yaw_doubleSpinBox_gt->value();
+  request->goal[0] = goalPos.x();
+ 	request->goal[1] = goalPos.y();
+  request->goal[2] = goalPos.z();
+  request->goal[3]  = yaw;
 
 	auto result = client->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
@@ -838,6 +903,19 @@ void WaypointFrame::relativeChanged(int b){
   }
   else{
 	 relative_ = false;
+  }
+}
+
+void WaypointFrame::originChanged(int b){
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  if (b ==2){
+	  local_frame_ = true;
+    std::cout << " LOCAL FRAME is " << local_frame_ <<std::endl;
+  }
+  else{
+	 local_frame_ = false;
+    std::cout << " LOCAL FRAME is " << local_frame_ <<std::endl;
+
   }
 }
 
@@ -876,5 +954,13 @@ void WaypointFrame::goHome_push_button(){
     RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
   }
 
+}
+
+Eigen::Quaternionf WaypointFrame::getQuatTransform(){
+  return (quat_transform_);
+}
+
+bool WaypointFrame::getLocalFrameStatus(){
+  return (local_frame_);
 }
 }

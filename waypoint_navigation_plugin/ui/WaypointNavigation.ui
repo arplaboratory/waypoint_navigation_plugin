@@ -556,6 +556,13 @@
      </item>
     </layout>
    </item>
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="local_frame">
+     <property name="text">
+      <string>Enable FLU</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
