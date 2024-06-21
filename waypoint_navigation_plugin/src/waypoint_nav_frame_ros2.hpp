@@ -65,7 +65,7 @@
 #include <rosbag2_cpp/writer.hpp>
 #include <rosbag2_cpp/reader.hpp>
 #include <rclcpp/serialization.hpp>
-#include <rosbag2_cpp/storage_options.hpp>
+#include <rosbag2_storage/storage_options.hpp>
 #include <OgrePrerequisites.h>
 
 typedef struct {
