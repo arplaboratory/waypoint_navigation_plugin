@@ -72,6 +72,7 @@ WaypointNavTool::~WaypointNavTool()
 
   delete frame_;
   delete frame_dock_;
+  delete moving_flag_node_;
 }
 
 void WaypointNavTool::onInitialize()

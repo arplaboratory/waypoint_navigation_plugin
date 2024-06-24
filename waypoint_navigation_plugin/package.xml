@@ -24,6 +24,7 @@
   <depend condition="$ROS_VERSION == 2">rviz_rendering</depend>
   <depend condition="$ROS_VERSION == 2">sensor_msgs</depend>
   <depend condition="$ROS_VERSION == 2">rosbag2_cpp</depend>
+  <depend condition="$ROS_VERSION == 2">rosbag2_storage</depend>
   <depend condition="$ROS_VERSION == 2">mav_manager_srv</depend>
 
   <build_depend condition="$ROS_VERSION == 2">qtbase5-dev</build_depend>
