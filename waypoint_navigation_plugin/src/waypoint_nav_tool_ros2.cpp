@@ -192,6 +192,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
   auto projection = projection_finder->getViewportPointProjectionOnXYPlane(
     event.panel->getRenderWindow(), event.x, event.y);
   Ogre::Vector3 intersection = projection.second;
+
     if (projection.first) {
 
       moving_flag_node_->setVisible(true);
@@ -532,20 +533,36 @@ nav_msgs::msg::Path WaypointNavTool::getPath(){
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
   {
+    geometry_msgs::msg::PoseStamped pos;
+    
     Ogre::Vector3 position;
     position = sn_it->second->getPosition();
-
-    geometry_msgs::msg::PoseStamped pos;
-    pos.pose.position.x = position.x;
-    pos.pose.position.y = position.y;
-    pos.pose.position.z = position.z;
-
+    Eigen::Vector3f pvec(position.x, position.y, position.z);
+    
+    
     Ogre::Quaternion quat;
     quat = sn_it->second->getOrientation();
-    pos.pose.orientation.x = quat.x;
-    pos.pose.orientation.y = quat.y;
-    pos.pose.orientation.z = quat.z;
-    pos.pose.orientation.w = quat.w;
+    Eigen::Quaternionf q(quat.w, quat.x, quat.y, quat.z);
+
+    if (frame_->getLocalFrameStatus()){
+
+      Eigen::Quaternionf quat_transform = frame_->getQuatTransform();
+      pvec = quat_transform * pvec;
+      q = quat_transform * q;
+      RCLCPP_INFO(nh_->get_logger(), "q.w: %f, q.x: %f, q.y: %f, q.z: %f", quat_transform.w(), quat_transform.x(), quat_transform.y(), quat_transform.z()); 
+      RCLCPP_INFO(nh_->get_logger(), "pvec.x: %f, pvec.y: %f, pvec.z: %f", pvec.x(), pvec.y(), pvec.z()); 
+
+
+    }
+
+    pos.pose.position.x = pvec.x();
+    pos.pose.position.y = pvec.y();
+    pos.pose.position.z = pvec.z();
+    
+    pos.pose.orientation.x = q.x();
+    pos.pose.orientation.y = q.y();
+    pos.pose.orientation.z = q.z();
+    pos.pose.orientation.w = q.w();
 
     path.poses.push_back(pos);
   }
