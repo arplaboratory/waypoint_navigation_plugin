@@ -1,5 +1,11 @@
 # waypoint_navigation_plugin
 
+# KNOWN BUGS
+
+BUILD THIS PACKAGE IN DEBUG MODE RELEASE MODE VERSION OF THIS PACKAGE IS KNOWN FOR UNEXPECTED CRASHING!!!
+
+# Descritpion
+
 This directory contains both waypoint_navigation_plugin and quadrotor_path
 
 This has been Tested for LIbogre1.9-1.12. If you don't have Ogre run. Please align to this version as other versions may have issues on waypoint navigation plugin for ROS2
