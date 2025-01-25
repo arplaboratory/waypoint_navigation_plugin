@@ -43,7 +43,6 @@
 #include <fstream>
 #include "waypoint_nav_tool_ros2.hpp"
 //#include "waypoint_nav_frame.h"
-#include <mav_manager_srv/srv/vec4.hpp>
 #include <OGRE/OgreVector3.h>
 #include <QFileDialog>
 #include <boost/foreach.hpp>
@@ -77,6 +76,20 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   // quat_transform_ = Eigen::Quaternionf::Identity();
+	std::string srvs_name = "/"+ robot_name+"/voxblox_node/clear_map";
+	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
+	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
+	hover_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
+	land_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
+	takeoff_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	go_to_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
+	go_to_relative_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
 
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
@@ -722,107 +735,87 @@ QString WaypointFrame::getOutputTopic()
 
   //Clear Map
 void WaypointFrame::clear_map(){
-	auto client = node->create_client<std_srvs::srv::Empty>("/voxblox_node/clear_map");
 	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
-	auto result = client->async_send_request(request);
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "Success callback Clear map");
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "Failed callback Clear map");  
-  }
+	auto result = clear_map_client_->async_send_request(request);
 }
 
 
   //Buttons RQT MAV MANAGER
 void WaypointFrame::motors_on_push_button(){
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = true;
-	auto result = client->async_send_request(request);
+	auto result = motors_client_->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
-
 }
 
 void WaypointFrame::motors_off_push_button(){
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	auto client = node->create_client<std_srvs::srv::SetBool>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
 	request->data = false;
-	auto result = client->async_send_request(request);
+	auto result = motors_client_->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
 }
 
 void WaypointFrame::hover_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
-	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-	auto result = client->async_send_request(request);
+	auto result = hover_client_->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
-
 }
 
 void WaypointFrame::land_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
-	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-	auto result = client->async_send_request(request);
+	auto result = land_client_->async_send_request(request);
     RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
 }
 
 void WaypointFrame::takeoff_push_button(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-	std::string srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
-	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	auto client = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
-	auto result = client->async_send_request(request);
+	auto result = takeoff_client_->async_send_request(request);
   RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
+}
+
+void WaypointFrame::goto_push_button(){
+  
+  Eigen::Vector3f goalPos(ui_->x_doubleSpinBox_gt->value(),
+                          ui_->y_doubleSpinBox_gt->value(),
+                          ui_->z_doubleSpinBox_gt->value());
+  
+  goalPos = quat_transform_ * goalPos;
+  double yaw = ui_->yaw_doubleSpinBox_gt->value();
+  
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	if(relative_){
+    auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
+    request->goal[0] = goalPos.x();
+    request->goal[1] = goalPos.y();
+    request->goal[2] = goalPos.z();
+    request->goal[3]  = yaw;
+    auto result = go_to_relative_client_->async_send_request(request);
+	}
+	else{
+    yaw-=yaw_init_;
+    auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
+    request->goal[0] = goalPos.x();
+    request->goal[1] = goalPos.y();
+    request->goal[2] = goalPos.z();
+    request->goal[3]  = yaw;
+    auto result = go_to_client_->async_send_request(request);
+	}
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
+}
+
+void WaypointFrame::goHome_push_button(){
+  boost::mutex::scoped_lock lock(frame_updates_mutex_);
+	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
+  request->goal[0]  = 0.0;
+ 	request->goal[1] = 0.0;
+  request->goal[2] = 0.5;
+  request->goal[3]  = 0.0;
+	auto result = go_to_client_->async_send_request(request);
+  RCLCPP_INFO(node->get_logger(), "Sent Service");
 }
 
 void WaypointFrame::tf2_callback(){
@@ -858,44 +851,6 @@ void WaypointFrame::tf2_callback(){
   }
 }
 
-void WaypointFrame::goto_push_button(){
-  
-  Eigen::Vector3f goalPos(ui_->x_doubleSpinBox_gt->value(),
-                          ui_->y_doubleSpinBox_gt->value(),
-                          ui_->z_doubleSpinBox_gt->value());
-  
-  goalPos = quat_transform_ * goalPos;
-  double yaw = ui_->yaw_doubleSpinBox_gt->value();
-  
-  boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	if(relative_){
-		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
-	}
-	else{
-		srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-    yaw-=yaw_init_;
-	}
-	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
-	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
-  request->goal[0] = goalPos.x();
- 	request->goal[1] = goalPos.y();
-  request->goal[2] = goalPos.z();
-  request->goal[3]  = yaw;
-
-	auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
-}
-
 void WaypointFrame::relativeChanged(int b){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   if (b ==2){
@@ -924,6 +879,22 @@ void WaypointFrame::robotChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
+	std::string srvs_name = "/"+ robot_name+"/voxblox_node/clear_map";
+	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
+	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
+	hover_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
+	land_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
+	takeoff_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	go_to_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
+	go_to_relative_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
+
+
 }
 
 void WaypointFrame::serviceChanged(){
@@ -932,29 +903,7 @@ void WaypointFrame::serviceChanged(){
   mav_node_name =  new_frame.toStdString();
 }
 
-void WaypointFrame::goHome_push_button(){
-    boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
-	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
-  request->goal[0]  = 0.0;
- 	request->goal[1] = 0.0;
-  request->goal[2] = 0.5;
-  request->goal[3]  = 0.0;
-	auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
 
-}
 
 Eigen::Quaternionf WaypointFrame::getQuatTransform(){
   return (quat_transform_);
