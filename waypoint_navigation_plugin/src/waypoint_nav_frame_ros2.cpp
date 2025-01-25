@@ -796,7 +796,6 @@ void WaypointFrame::goto_push_button(){
     auto result = go_to_relative_client_->async_send_request(request);
 	}
 	else{
-    yaw-=yaw_init_;
     auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
     request->goal[0] = goalPos.x();
     request->goal[1] = goalPos.y();
