@@ -69,7 +69,6 @@ WaypointNavTool::~WaypointNavTool()
   {
       scene_manager_->destroySceneNode(sn_it->second);
   }
-
   delete frame_;
   delete frame_dock_;
   delete moving_flag_node_;
