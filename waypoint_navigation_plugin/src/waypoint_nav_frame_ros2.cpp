@@ -786,7 +786,6 @@ void WaypointFrame::goto_push_button(){
   double yaw = ui_->yaw_doubleSpinBox_gt->value();
   
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	if(relative_){
     auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
     request->goal[0] = goalPos.x();
