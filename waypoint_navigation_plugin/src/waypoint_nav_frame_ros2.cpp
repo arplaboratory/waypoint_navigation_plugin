@@ -117,6 +117,9 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
   
+  robot_name = std::getenv("MAV_NAME") ? std::string(std::getenv("MAV_NAME")) : "quadrotor";
+  ui_->robot_name_line_edit->setText(QString::fromStdString(robot_name));
+
   node->declare_parameter("/"+ robot_name+"/"+"replan",false);
   node->declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
 	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
