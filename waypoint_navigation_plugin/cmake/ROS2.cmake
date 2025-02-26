@@ -53,16 +53,23 @@ set(CMAKE_AUTOMOC ON)
 set(SRC_FILES
   src/waypoint_nav_frame_ros2.cpp
   src/waypoint_nav_tool_ros2.cpp
+   
+  src/hri_nav_frame_ros2.cpp
+  src/hri_nav_tool_ros2.cpp
+
 )
 
 set(${PROJECT_NAME}_HDRS
     src/waypoint_nav_frame_ros2.hpp
     src/waypoint_nav_tool_ros2.hpp
+    src/hri_nav_frame_ros2.hpp
+    src/hri_nav_tool_ros2.hpp
     src/gnuplot.h
 )
 
 set(${PROJECT_NAME}_UIS
     ui/WaypointNavigation.ui
+    ui/HRI_coworker.ui
 )
 
 message(STATUS "Generate header for ui with rviz2_QT_VERSION: ${rviz2_QT_VERSION}")

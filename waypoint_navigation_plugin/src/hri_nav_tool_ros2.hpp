@@ -48,17 +48,11 @@
 #include <OgrePrerequisites.h>
 
 #include <thread>
-/*
-#include "rviz_common/render_panel.hpp"
-#include <rviz_common/display_context.hpp>
-#include "rviz_common/viewport_mouse_event.hpp"
-#include "rviz_common/properties/vector_property.hpp"
-#include <rviz_common/panel.hpp>
 
 
-**/
 using std::placeholders::_1;
-#include "waypoint_nav_frame_ros2.hpp"
+#include "hri_nav_frame_ros2.hpp"
+
 namespace rviz_common::properties
 {
 class VectorProperty;
@@ -75,23 +69,21 @@ class panel;
 class WindowManagerInterface;
 }
 
-
-
 namespace Ui
 {
 class QuadrotorSteeringWidget;
 }
 
-namespace waypoint_nav_plugin
+namespace hri_nav_plugin
 {
 
-class WaypointNavTool: public rviz_common::Tool
+class HriNavTool: public rviz_common::Tool
 {
 
 Q_OBJECT
 public:
-  WaypointNavTool();
-  ~WaypointNavTool();
+  HriNavTool();
+  ~HriNavTool();
 
   virtual void onInitialize();
 
@@ -113,8 +105,8 @@ public:
   void loadPoints(std::string filn);
   //GET GEOMETRY MSGS PATH
   nav_msgs::msg::Path getPath();
-
-private:
+  
+  private:
   void processFeedback(const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback);
   void getMarkerPoses();
 
@@ -122,11 +114,11 @@ private:
   std::string flag_resource_;
 
   // the waypoint nav Qt frame
-  WaypointFrame *frame_;
+  HriFrame *frame_;
   //
   bool first_time_ = true;
   rviz_common::PanelDockWidget* frame_dock_;
-
+  
   interactive_markers::InteractiveMarkerServer * server_;
   interactive_markers::MenuHandler menu_handler_;
 

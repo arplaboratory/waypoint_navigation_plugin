@@ -55,11 +55,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include <nav_msgs/msg/path.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/int32.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <std_srvs/srv/empty.hpp>
 #include <Eigen/Sparse>
-#include "ui_WaypointNavigation.h"
+#include "ui_HRI_coworker.h"
 //#include <OGRE/OgreVector3.h>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <rosbag2_cpp/writer.hpp>
@@ -97,33 +98,34 @@ class InteractiveMarkerServer;
 
 namespace Ui
 {
-class WaypointNavigationWidget;
+class HRI_coworkerWidget;
 }
 
-namespace waypoint_nav_plugin
+namespace hri_nav_plugin
 {
-class WaypointNavTool;
+class HriNavTool;
 }
 
-namespace waypoint_nav_plugin
+namespace hri_nav_plugin
 {
 
-class WaypointFrame : public QWidget
+class HriFrame : public QWidget
 {
-  friend class WaypointNavTool;
+  friend class HriNavTool;
   Q_OBJECT
 
-public:
-  WaypointFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
-   interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent = 0, WaypointNavTool* wp_tool=0);
-  ~WaypointFrame();
+  public:
+  HriFrame(rviz_common::DisplayContext *context, std::map<int, Ogre::SceneNode* >* map_ptr,
+   interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *parent = 0, HriNavTool* wp_tool=0);
+  ~HriFrame();
   interactive_markers::InteractiveMarkerServer* server_;
 
   void enable();
   void disable();
 
+
   void setWpCount(int size);
-  void setConfig(QString topic, QString frame, float height);
+  //void setConfig(QString topic, QString frame, float height);
   void setWpLabel();
   void setSelectedMarkerName(std::string name);
   void setPose(Eigen::Vector3f position, Eigen::Vector4f quat);
@@ -135,42 +137,23 @@ public:
   double getDefaultHeight();
   double getTime();
   bool get2Ddisplay();
-  QString getFrameId();
-  QString getOutputTopic();
+//   QString getFrameId();
+//   QString getOutputTopic();
   void getPose(Eigen::Vector3f * position, Eigen::Vector4f * quat);
   void display_corridros();
   void setLimit(Eigen::Vector4d& upper, Eigen::Vector4d& lower, bool enable);
   std::vector<waypoint_ineq_const> ineq_list;
   void push_newIneq_const();
   void ineqChanged(double val,int mode, int axis);
-protected:
 
-  Ui::WaypointNavigationWidget *ui_;
+
+  protected:
+
+  Ui::HRI_coworkerWidget *ui_;
   rviz_common::DisplayContext* context_;
 
-private Q_SLOTS:
-  void publishButtonClicked();
-  void clearAllWaypoints();
-  void heightChanged(double h);
-  void timeChanged(double t);
-  void bool2DChanged(int b);
-  void bern_enable(int b);
-  void replan_enable(int b);
-  void topic_enable(int b);
+  private Q_SLOTS:
 
-  void frameChanged();
-  void topicChanged();
-  void poseChanged(double val);
-
-
-  //void rollChanged(double val);
-  //void pitchChanged(double val);
-
-  void saveButtonClicked();
-  void loadButtonClicked();
-  void perchClicked();
-
-  //Buttons RQT MAV MANAGER
   void motors_on_push_button();
   void motors_off_push_button();
   void land_push_button();
@@ -183,69 +166,39 @@ private Q_SLOTS:
   void hover_push_button();
   void clear_map();
   void clear_path();
-   //Bernstein Check boxes
+  void rqt_change_mode_();
+  void start_FPVI_task();
+  void start_APVI_task();
+  void exit_task();
+  void rotate_180_yaw();
 
 
-  //Inequality cahgned for each double box
-  /*
-  void pl_ineqChanged(double val);
-  void xl_ineqChanged(double val);
-  void yl_ineqChanged(double val);
-  void zl_ineqChanged(double val);
-  void pu_ineqChanged(double val);
-  void xu_ineqChanged(double val);
-  void yu_ineqChanged(double val);
-  void zu_ineqChanged(double val);
-  void en_ineqChanged(double val);
-  void do_ineqChanged(double val);*/
-
-private:
+  private:
   rclcpp::Node::SharedPtr node;
-  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr wp_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_corridor_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr path_clear_pub_;
-  
-  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ path_listen_;
-  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
-  //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ acc_listen_;
-
- // void display(const nav_msgs::msg::Path &msg, int index);
-
-  rclcpp::Serialization<nav_msgs::msg::Path> serialization_;
-  WaypointNavTool* wp_nav_tool_;
+  rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr rqt_change_mode;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr rqt_input_start_FPVI_task;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr rqt_input_start_APVI_task;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr rqt_input_rotate_180_yaw;
+ 
+  HriNavTool* hri_nav_tool_;
   //pointers passed via contructor
   std::map<int, Ogre::SceneNode* >* sn_map_ptr_;
   Ogre::SceneManager* scene_manager_;
   int* unique_ind_;
 
-
   //default height the waypoint must be placed at
-  double default_height_;
-  double total_time_ = 0.0; //Jeff Addition Total Time of waypopints
-  bool display_2D = false; // Jeff additional boolean 
   bool relative_ = true;
-  bool bern_enable_ = false;
-  bool replan_enable_ = false;
-  bool topicOverride = false;
-  double roll_=0.0;
-  double pitch_=0.0;
 
-  // The current name of the output topic.
-  QString output_topic_;
-  QString frame_id_;
-
-
+  //interactive_markers::InteractiveMarkerServer* server_; 
   // The current name of the output topic.
   std::string robot_name = "quadrotor";
   std::string mav_node_name = "mav_services";
 
   //mutex for changes of variables
   boost::mutex frame_updates_mutex_;
-  visualization_msgs::msg::MarkerArray marker_array;
-  std::string selected_marker_name_;
 
 };
-
 }
 
 #endif

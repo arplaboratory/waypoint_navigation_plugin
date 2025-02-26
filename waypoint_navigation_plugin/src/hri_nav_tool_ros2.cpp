@@ -34,7 +34,7 @@
 //#include <OGRE/OgreEntity.h>
 #include <Ogre.h>
 //#include <OgrePrerequisites.h>
-#include "waypoint_nav_tool_ros2.hpp"
+#include "hri_nav_tool_ros2.hpp"
 #include <boost/bind.hpp>
 #include "rviz_rendering/viewport_projection_finder.hpp"
 #include <rviz_common/display_context.hpp>
@@ -46,11 +46,11 @@
 #include "rviz_common/render_panel.hpp"
 //#include <OGRE/OgreVector3.h>
 
-namespace waypoint_nav_plugin
-{
 
-WaypointNavTool::WaypointNavTool()
-  : moving_flag_node_(NULL)
+namespace hri_nav_plugin
+{
+    HriNavTool::HriNavTool()
+    : moving_flag_node_(NULL)
   , frame_dock_(NULL)
   , frame_(NULL)
   , nh_(std::make_shared<rclcpp::Node>("w_tool"))
@@ -62,7 +62,7 @@ WaypointNavTool::WaypointNavTool()
 }
 
 
-WaypointNavTool::~WaypointNavTool()
+HriNavTool::~HriNavTool()
 {
   M_StringToSNPtr::iterator sn_it;
   for(sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
@@ -75,7 +75,8 @@ WaypointNavTool::~WaypointNavTool()
   delete moving_flag_node_;
 }
 
-void WaypointNavTool::onInitialize()
+
+void HriNavTool::onInitialize()
 {
   flag_resource_ = "package://waypoint_navigation_plugin/media/flag.dae";
 
@@ -95,8 +96,7 @@ void WaypointNavTool::onInitialize()
   moving_flag_node_->setVisible(false);
 
   rviz_common::WindowManagerInterface* window_context = context_->getWindowManager();
-  frame_ = new WaypointFrame(context_, &sn_map_, server_, &unique_ind_, NULL, this);
-
+  frame_ = new HriFrame(context_, &sn_map_, server_, &unique_ind_, NULL, this);
   //if (window_context){
   //  std::cout << " ADD PANEL " <<std::endl;
   frame_dock_ = window_context->addPane("Waypoint Navigation", frame_);
@@ -104,37 +104,20 @@ void WaypointNavTool::onInitialize()
   frame_->enable();
 
   //add Delete menu for interactive marker
-  menu_handler_.insert("Delete", std::bind(&WaypointNavTool::processFeedback, this , std::placeholders::_1));
-  menu_handler_.insert("Set Manual", std::bind(&WaypointNavTool::processFeedback, this,  std::placeholders::_1));
+  menu_handler_.insert("Delete", std::bind(&HriNavTool::processFeedback, this , std::placeholders::_1));
+  menu_handler_.insert("Set Manual", std::bind(&HriNavTool::processFeedback, this,  std::placeholders::_1));
     server_ = new interactive_markers::InteractiveMarkerServer("waypoint", 
     nh_->get_node_base_interface(),
     nh_->get_node_clock_interface(),
     nh_->get_node_logging_interface(),
     nh_->get_node_topics_interface(),
     nh_->get_node_services_interface());
-    thread_ = std::make_shared<std::thread>(std::bind(&WaypointNavTool::spin, this));
+    thread_ = std::make_shared<std::thread>(std::bind(&HriNavTool::spin, this));
     frame_->server_ = server_;
     first_time_ = false;
 }
 
-// Activation and deactivation
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//
-// activate() is called when the tool is started by the user, either
-// by clicking on its button in the toolbar or by pressing its hotkey.
-//
-// First we set the moving flag node to be visible, then we create an
-// rviz_common::VectorProperty to show the user the position of the flag.
-// Unlike rviz_common::Display, rviz_common::Tool is not a subclass of
-// rviz_common::Property, so when we want to add a tool property we need to
-// get the parent container with getPropertyContainer() and add it to
-// that.
-//
-// We wouldn't have to set current_flag_property_ to be read-only, but
-// if it were writable the flag should really change position when the
-// user edits the property.  This is a fine idea, and is possible, but
-// is left as an exercise for the reader.
-void WaypointNavTool::activate()
+void HriNavTool::activate()
 {
   std::cout << " ACTIVATE START " <<std::endl;
   if(moving_flag_node_)
@@ -150,7 +133,7 @@ void WaypointNavTool::activate()
 }
 
 //Spin the ROS NODE
- void WaypointNavTool::spin()
+ void HriNavTool::spin()
  {
     exec_.add_node(nh_);
     while(rclcpp::ok()){
@@ -166,7 +149,7 @@ void WaypointNavTool::activate()
 // property, so that doesn't need to be done in a separate step.  If
 // we didn't delete it here, it would stay in the list of waypoints when
 // we switch to another tool.
-void WaypointNavTool::deactivate()
+void HriNavTool::deactivate()
 {
   if(moving_flag_node_)
   {
@@ -179,7 +162,7 @@ void WaypointNavTool::deactivate()
 
 // Handling mouse events
 
-int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
+int HriNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
 {
   if(!moving_flag_node_)
   {
@@ -239,7 +222,7 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
   return Render;
   }
 
-void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat)
+void HriNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat)
 {
     unique_ind_++; //increment the index for unique marker names
 
@@ -332,7 +315,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
 
     server_->insert(int_marker);
     server_->setCallback(int_marker.name,
-    	std::bind(&WaypointNavTool::processFeedback, this, std::placeholders::_1));
+    	std::bind(&HriNavTool::processFeedback, this, std::placeholders::_1));
     menu_handler_.apply(*server_, int_marker.name);
 
     //Set the current marker as selected
@@ -350,7 +333,7 @@ void WaypointNavTool::makeIm(const Ogre::Vector3& position, const Ogre::Quaterni
     server_->applyChanges();
 }
 
-bool WaypointNavTool::setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen){
+bool HriNavTool::setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen){
   std::map<int, Ogre::SceneNode *>::iterator sn_entry =  sn_map_.find(index);
   if (sn_entry == sn_map_.end()){
     RCLCPP_ERROR(rclcpp::get_logger("waypoint nav plugin")
@@ -395,7 +378,7 @@ bool WaypointNavTool::setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen:
 }
 
 
-void WaypointNavTool::processFeedback(
+void HriNavTool::processFeedback(
       const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback)
 {
   switch (feedback->event_type)
@@ -509,7 +492,7 @@ void WaypointNavTool::processFeedback(
   }
 }
 
-void WaypointNavTool::getMarkerPoses()
+void HriNavTool::getMarkerPoses()
 {
   M_StringToSNPtr::iterator sn_it;
   for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
@@ -527,7 +510,7 @@ void WaypointNavTool::getMarkerPoses()
   }
 }
 
-nav_msgs::msg::Path WaypointNavTool::getPath(){
+nav_msgs::msg::Path HriNavTool::getPath(){
   nav_msgs::msg::Path path;
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
   for (sn_it = sn_map_.begin(); sn_it != sn_map_.end(); sn_it++)
@@ -552,7 +535,7 @@ nav_msgs::msg::Path WaypointNavTool::getPath(){
   return path;
 }
 
-void WaypointNavTool::clearAllWaypoints()
+void HriNavTool::clearAllWaypoints()
 {
   //M_StringToSNPtr::iterator sn_it;
   std::map<int, Ogre::SceneNode* >::iterator sn_it;
@@ -569,7 +552,7 @@ void WaypointNavTool::clearAllWaypoints()
   }
 }
 
-void WaypointNavTool::loadPoints(std::string filn)
+void HriNavTool::loadPoints(std::string filn)
 {
   //Clear existing waypoints
   clearAllWaypoints();
@@ -604,7 +587,7 @@ void WaypointNavTool::loadPoints(std::string filn)
   }
 }
 
-void WaypointNavTool::savePoints(std::string filn){
+void HriNavTool::savePoints(std::string filn){
   std::ofstream outputFile(filn);
   if (outputFile.is_open()) {
     outputFile << sn_map_.size() << std::endl;
@@ -645,22 +628,22 @@ void WaypointNavTool::savePoints(std::string filn){
 // We first save the class ID to the config object so the
 // rviz_common::ToolManager will know what to instantiate when the config
 // file is read back in.
-void WaypointNavTool::save(rviz_common::Config config) const
+void HriNavTool::save(rviz_common::Config config) const
 {
   config.mapSetValue("Class", getClassId());
   //rviz_common::Config waypoints_config = config.mapMakeChild("Waypoints");
 
   rviz_common::Config waypoints_config = config.mapMakeChild("WaypointsTool");
 
-  waypoints_config.mapSetValue("topic", frame_->getOutputTopic());
-  waypoints_config.mapSetValue("frame_id", frame_->getFrameId());
-  waypoints_config.mapSetValue("default_height", frame_->getDefaultHeight());
+//   waypoints_config.mapSetValue("topic", frame_->getOutputTopic());
+//   waypoints_config.mapSetValue("frame_id", frame_->getFrameId());
+//   waypoints_config.mapSetValue("default_height", frame_->getDefaultHeight());
 }
 
 // In a tool's load() function, we don't need to read its class
 // because that has already been read and used to instantiate the
 // object before this can have been called.
-void WaypointNavTool::load(const rviz_common::Config& config)
+void HriNavTool::load(const rviz_common::Config& config)
 {
   rviz_common::Config waypoints_config = config.mapGetChild("WaypointsTool");
 
@@ -674,11 +657,11 @@ void WaypointNavTool::load(const rviz_common::Config& config)
 
   waypoints_config.mapGetFloat("default_height", &height);
 
-  frame_->setConfig(topic, frame, height);
+  //frame_->setConfig(topic, frame, height);
 }
 
 } // end namespace
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(waypoint_nav_plugin::WaypointNavTool,rviz_common::Tool)
+PLUGINLIB_EXPORT_CLASS(hri_nav_plugin::HriNavTool,rviz_common::Tool)
 
