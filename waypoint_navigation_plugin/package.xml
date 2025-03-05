@@ -26,6 +26,7 @@
   <depend condition="$ROS_VERSION == 2">rosbag2_cpp</depend>
   <depend condition="$ROS_VERSION == 2">rosbag2_storage</depend>
   <depend condition="$ROS_VERSION == 2">mav_manager_srv</depend>
+  <depend condition="$ROS_VERSION == 2">px4_msgs</depend>
 
   <build_depend condition="$ROS_VERSION == 2">qtbase5-dev</build_depend>
 

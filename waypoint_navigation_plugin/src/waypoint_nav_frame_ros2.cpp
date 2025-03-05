@@ -108,7 +108,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   connect(ui_->goto_push_button, SIGNAL(clicked()), this, SLOT(goto_push_button()));
   connect(ui_->relative_checkbox, SIGNAL(stateChanged(int)), this, SLOT(relativeChanged(int)));
   connect(ui_->local_frame, SIGNAL(stateChanged(int)), this, SLOT(originChanged(int)));
-  connect(ui_->go_home_button, SIGNAL(clicked()), this, SLOT(goHome_push_button()));
+  connect(ui_->kill_switch, SIGNAL(clicked()), this, SLOT(killSwitchEngage()));
   connect(ui_->hover, SIGNAL(clicked()), this, SLOT(hover_push_button()));
   connect(ui_->bern_enable, SIGNAL(stateChanged(int)), this, SLOT(bern_enable(int)));
   connect(ui_->replan_enable, SIGNAL(stateChanged(int)), this, SLOT(replan_enable(int)));
@@ -122,6 +122,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
 
   node->declare_parameter("/"+ robot_name+"/"+"replan",false);
   node->declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
+  kill_publisher_ = node->create_publisher<px4_msgs::msg::VehicleCommand>("/" + robot_name + "/fmu/in/vehicle_command", 1);
 	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
 	//vel_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_vel", 10, &WaypointFrame::vel_listen, this);
 	//acc_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_acc", 10, &WaypointFrame::acc_listen, this);
@@ -935,28 +936,18 @@ void WaypointFrame::serviceChanged(){
   mav_node_name =  new_frame.toStdString();
 }
 
-void WaypointFrame::goHome_push_button(){
-    boost::mutex::scoped_lock lock(frame_updates_mutex_);
-  std::string srvs_name;// = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	//ros::ServiceClient client = nh.serviceClient<std_srvs::Trigger>(srvs_name);
-	auto client = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
-	auto request = std::make_shared<mav_manager_srv::srv::Vec4::Request>();
-  request->goal[0]  = 0.0;
- 	request->goal[1] = 0.0;
-  request->goal[2] = 0.5;
-  request->goal[3]  = 0.0;
-	auto result = client->async_send_request(request);
-  RCLCPP_INFO(node->get_logger(), "Sent Service");
-  if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
-   std::chrono::duration</*TimeRepT*/int64_t, /*TimeT*/ std::milli>(300))==
-  rclcpp::FutureReturnCode::SUCCESS){
-    RCLCPP_INFO(node->get_logger(), "%s Success callback", srvs_name.c_str());
-  }
-  else{    
-    RCLCPP_ERROR(node->get_logger(), "%s Failed callback", srvs_name.c_str());  
-  }
-
+void WaypointFrame::killSwitchEngage(){
+  auto message = px4_msgs::msg::VehicleCommand();
+  message.command = 185;  // MAV_CMD_COMPONENT_ARM_DISARM
+  message.param1 = 1.0;   // Engage kill switch
+  message.target_system = 1;
+  message.target_component = 1;
+  message.source_system = 1;
+  message.source_component = 1;
+  message.from_external = true;
+  
+  kill_publisher_->publish(message);
+  RCLCPP_WARN(node->get_logger(), "Kill Switch Engaged");
 }
 
 Eigen::Quaternionf WaypointFrame::getQuatTransform(){

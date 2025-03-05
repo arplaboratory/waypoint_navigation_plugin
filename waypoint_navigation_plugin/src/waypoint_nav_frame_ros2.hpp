@@ -55,6 +55,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <nav_msgs/msg/path.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <px4_msgs/msg/vehicle_command.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <std_srvs/srv/empty.hpp>
@@ -186,7 +187,7 @@ private Q_SLOTS:
   void originChanged(int b);
   void robotChanged();
   void serviceChanged();
-  void goHome_push_button();
+  void killSwitchEngage();
   void hover_push_button();
   void clear_map();
   void clear_path();
@@ -210,6 +211,7 @@ private Q_SLOTS:
 private:
   rclcpp::Node::SharedPtr node;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr wp_pub_;
+  rclcpp::Publisher<px4_msgs::msg::VehicleCommand>::SharedPtr kill_publisher_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_corridor_;
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr path_clear_pub_;
   rclcpp::TimerBase::SharedPtr timer_{nullptr};

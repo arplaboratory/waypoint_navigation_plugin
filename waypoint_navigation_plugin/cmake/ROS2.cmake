@@ -26,6 +26,7 @@ find_package(mav_manager_srv REQUIRED)
 find_package(rviz_ogre_vendor REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(rosbag2 REQUIRED)
+find_package(px4_msgs REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Test Concurrent)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -43,6 +44,7 @@ set(dependencies
   pluginlib
   std_srvs
   mav_manager_srv
+  px4_msgs
 )
 
 ## This setting causes Qt's "MOC" generation to happen automatically.
