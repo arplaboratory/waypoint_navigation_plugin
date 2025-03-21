@@ -881,7 +881,8 @@ void WaypointFrame::robotChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
-	clear_map_client_ = node->create_client<std_srvs::srv::Empty>( "/"+ robot_name+"/nvblox_node/clear_map");
+	std::string srvs_name =  "/"+ robot_name+"/nvblox_node/clear_map";
+	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
 	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
