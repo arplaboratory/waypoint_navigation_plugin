@@ -130,6 +130,9 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   
   connect(ui_->reset_map, SIGNAL(clicked()), this, SLOT(clear_map()));
   
+  robot_name = std::getenv("MAV_NAME") ? std::string(std::getenv("MAV_NAME")) : "quadrotor";
+  ui_->robot_name_line_edit->setText(QString::fromStdString(robot_name));
+
   node->declare_parameter("/"+ robot_name+"/"+"replan",false);
   node->declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
 	//path_listen_ = nh_.subscribe("/quadrotor/trackers_manager/qp_tracker/qp_trajectory_pos", 10, &WaypointFrame::pos_listen, this);
@@ -735,6 +738,7 @@ QString WaypointFrame::getOutputTopic()
 
   //Clear Map
 void WaypointFrame::clear_map(){
+
 	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
 	auto result = clear_map_client_->async_send_request(request);
 }
@@ -877,8 +881,7 @@ void WaypointFrame::robotChanged(){
   boost::mutex::scoped_lock lock(frame_updates_mutex_);
   QString new_frame = ui_->robot_name_line_edit->text();
   robot_name =  new_frame.toStdString();
-	std::string srvs_name = "/"+ robot_name+"/voxblox_node/clear_map";
-	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
+	clear_map_client_ = node->create_client<std_srvs::srv::Empty>("/nvblox_node/clear_map");
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
 	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
