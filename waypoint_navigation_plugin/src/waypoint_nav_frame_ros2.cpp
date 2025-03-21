@@ -76,20 +76,6 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   // quat_transform_ = Eigen::Quaternionf::Identity();
-	std::string srvs_name = "/"+ robot_name+"/voxblox_node/clear_map";
-	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
-	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
-	hover_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
-	land_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
-	takeoff_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
-	go_to_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
-	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
-	go_to_relative_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
 
   //connect the Qt signals and slots
   connect(ui_->publish_wp_button, SIGNAL(clicked()), this, SLOT(publishButtonClicked()));
@@ -132,6 +118,20 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   
   robot_name = std::getenv("MAV_NAME") ? std::string(std::getenv("MAV_NAME")) : "quadrotor";
   ui_->robot_name_line_edit->setText(QString::fromStdString(robot_name));
+	std::string srvs_name =  "/"+ robot_name+"/nvblox_node/clear_map";
+	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
+	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/hover";
+	hover_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/land";	
+	land_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
+	takeoff_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
+	go_to_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
+	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
+	go_to_relative_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
 
   node->declare_parameter("/"+ robot_name+"/"+"replan",false);
   node->declare_parameter("/"+ robot_name+"/"+"bern_enable",false);
