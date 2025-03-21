@@ -70,6 +70,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
 #include <Eigen/Geometry>
+#include <mav_manager_srv/srv/vec4.hpp>
 
 typedef struct {
     int derivOrder, vertexNum;
@@ -215,7 +216,13 @@ private:
   rclcpp::TimerBase::SharedPtr timer_{nullptr};
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-  
+  rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr motors_client_;
+  rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr land_client_;
+  rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr takeoff_client_;
+  rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr  hover_client_;
+  rclcpp::Client<std_srvs::srv::Empty>::SharedPtr clear_map_client_;
+  rclcpp::Client<mav_manager_srv::srv::Vec4>::SharedPtr go_to_client_;
+  rclcpp::Client<mav_manager_srv::srv::Vec4>::SharedPtr go_to_relative_client_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ path_listen_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ vel_listen_;
   //rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_ acc_listen_;
