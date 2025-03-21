@@ -76,7 +76,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   // quat_transform_ = Eigen::Quaternionf::Identity();
-	std::string srvs_name = "/"+ robot_name+"/voxblox_node/clear_map";
+	std::string srvs_name = "/"+ robot_name+"/nvblox_node/clear_map";
 	clear_map_client_ = node->create_client<std_srvs::srv::Empty>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/motors";
 	motors_client_ = node->create_client<std_srvs::srv::SetBool>(srvs_name);
