@@ -725,7 +725,7 @@ QString WaypointFrame::getOutputTopic()
 
   //Clear Map
 void WaypointFrame::clear_map(){
-	auto client = node->create_client<std_srvs::srv::Empty>("/voxblox_node/clear_map");
+	auto client = node->create_client<std_srvs::srv::Empty>("/nvblox_node/clear_map");
 	auto request = std::make_shared<std_srvs::srv::Empty::Request>();
 	auto result = client->async_send_request(request);
   if(rclcpp::spin_until_future_complete(node->get_node_base_interface(), result,
