@@ -1,10 +1,12 @@
 <package format="3">
   <name>waypoint_navigation_plugin</name>
-  <version>0.1.0</version>
+  <version>1.2.1</version>
   <description>
      Tool for planting waypoints in rviz.
   </description>
-  <maintainer email="tdineshd@gmail.com">Dinesh Thakur</maintainer>
+  <maintainer email="jm7752@nyu.edu">Jeffery Mao</maintainer>
+  <maintainer email="yangzhou@nyu.edu">Yang Zhou</maintainer>
+  <author email="tdineshd@gmail.com">Dinesh Thakur</author>
   <license>BSD</license>
 
   <author>Dinesh Thakur</author>
