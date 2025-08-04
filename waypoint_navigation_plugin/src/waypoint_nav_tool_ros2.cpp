@@ -190,10 +190,9 @@ int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
   auto projection_finder = std::make_shared<rviz_rendering::ViewportProjectionFinder>();
   auto projection = projection_finder->getViewportPointProjectionOnXYPlane(
     event.panel->getRenderWindow(), event.x, event.y);
-  Ogre::Vector3 intersection = projection.second;
 
     if (projection.first) {
-
+      Ogre::Vector3 intersection = projection.second;
       moving_flag_node_->setVisible(true);
       moving_flag_node_->setPosition(intersection);
       frame_->setWpLabel();
