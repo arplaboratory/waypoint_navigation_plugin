@@ -182,6 +182,7 @@ private Q_SLOTS:
   void motors_off_push_button();
   void land_push_button();
   void takeoff_push_button();
+  void run_mppi_push_button();
   void goto_push_button();
   void relativeChanged(int b);
   void originChanged(int b);
@@ -219,6 +220,7 @@ private:
   rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr motors_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr land_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr takeoff_client_;
+  rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr run_mppi_client_;
   rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr  hover_client_;
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr clear_map_client_;
   rclcpp::Client<mav_manager_srv::srv::Vec4>::SharedPtr go_to_client_;

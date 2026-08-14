@@ -102,6 +102,7 @@ public:
 
   virtual void load(const rviz_common::Config& config);
   virtual void save(rviz_common::Config config) const;
+  rclcpp::Node::SharedPtr getNode() const;
   void makeIm(const Ogre::Vector3& position, const Ogre::Quaternion& quat);
   void spin();
   bool setServerPose(int index, Eigen::Vector3f pos_eigen, Eigen::Vector4f quat_eigen);

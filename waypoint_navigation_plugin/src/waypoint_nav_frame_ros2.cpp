@@ -45,6 +45,7 @@
 //#include "waypoint_nav_frame.h"
 #include <OGRE/OgreVector3.h>
 #include <QFileDialog>
+#include <QMetaObject>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -68,7 +69,9 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   //scene_manager_ = context_->getSceneManager();
 
   // set up the GUI 
-  node = rclcpp::Node::make_shared("wp_node");
+  // Use the waypoint tool's executor-backed node. A standalone panel node is
+  // not spun, so asynchronous service responses would never be processed.
+  node = wp_tool ? wp_tool->getNode() : rclcpp::Node::make_shared("wp_node");
   ui_->setupUi(this);
   pub_corridor_ = node->create_publisher<visualization_msgs::msg::MarkerArray>("corridors", 1); 
   wp_pub_ = node->create_publisher<nav_msgs::msg::Path>("waypoints", 1);
@@ -104,6 +107,7 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
   connect(ui_->motors_off_push_button, SIGNAL(clicked()), this, SLOT(motors_off_push_button()));
   connect(ui_->land_push_button, SIGNAL(clicked()), this, SLOT(land_push_button()));
   connect(ui_->takeoff_push_button, SIGNAL(clicked()), this, SLOT(takeoff_push_button()));
+  connect(ui_->run_mppi_push_button, SIGNAL(clicked()), this, SLOT(run_mppi_push_button()));
   connect(ui_->goto_push_button, SIGNAL(clicked()), this, SLOT(goto_push_button()));
   connect(ui_->relative_checkbox, SIGNAL(stateChanged(int)), this, SLOT(relativeChanged(int)));
   connect(ui_->local_frame, SIGNAL(stateChanged(int)), this, SLOT(originChanged(int)));
@@ -128,6 +132,8 @@ interactive_markers::InteractiveMarkerServer* server, int* unique_ind, QWidget *
 	land_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
 	takeoff_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/px4_offboard_node/run_mppi";
+	run_mppi_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	go_to_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";
@@ -780,6 +786,52 @@ void WaypointFrame::takeoff_push_button(){
   RCLCPP_INFO(node->get_logger(), "Sent Service");
 }
 
+void WaypointFrame::run_mppi_push_button(){
+	if (!run_mppi_client_->service_is_ready()) {
+    RCLCPP_ERROR(
+        node->get_logger(),
+        "MPPI handoff service is not available at %s. Verify that "
+        "px4_offboard_node is running and has been rebuilt",
+        run_mppi_client_->get_service_name());
+    ui_->run_mppi_push_button->setToolTip(
+        QString("MPPI handoff service is not available at %1")
+            .arg(run_mppi_client_->get_service_name()));
+    return;
+  }
+
+	auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+  ui_->run_mppi_push_button->setEnabled(false);
+  ui_->run_mppi_push_button->setText("Requesting MPPI...");
+
+  auto response_callback =
+      [this](rclcpp::Client<std_srvs::srv::Trigger>::SharedFuture future) {
+        const auto response = future.get();
+        const bool success = response->success;
+        const std::string message = response->message;
+
+        if (success) {
+          RCLCPP_WARN(
+              node->get_logger(), "MPPI handoff accepted: %s", message.c_str());
+        } else {
+          RCLCPP_ERROR(node->get_logger(), "MPPI handoff rejected: %s", message.c_str());
+        }
+
+        QMetaObject::invokeMethod(
+            this,
+            [this, success, message]() {
+              ui_->run_mppi_push_button->setText(
+                  success ? "MPPI Running" : "Run MPPI");
+              ui_->run_mppi_push_button->setEnabled(!success);
+              ui_->run_mppi_push_button->setToolTip(
+                  QString::fromStdString(message));
+            },
+            Qt::QueuedConnection);
+      };
+
+	run_mppi_client_->async_send_request(request, response_callback);
+  RCLCPP_INFO(node->get_logger(), "Sent SO3 to MPPI controller handoff request");
+}
+
 void WaypointFrame::goto_push_button(){
   
   Eigen::Vector3f goalPos(ui_->x_doubleSpinBox_gt->value(),
@@ -891,6 +943,8 @@ void WaypointFrame::robotChanged(){
 	land_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/takeoff";
 	takeoff_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
+	srvs_name = "/"+ robot_name+"/px4_offboard_node/run_mppi";
+	run_mppi_client_ = node->create_client<std_srvs::srv::Trigger>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goTo";
 	go_to_client_ = node->create_client<mav_manager_srv::srv::Vec4>(srvs_name);
 	srvs_name = "/"+ robot_name+"/"+mav_node_name+"/goToRelative";

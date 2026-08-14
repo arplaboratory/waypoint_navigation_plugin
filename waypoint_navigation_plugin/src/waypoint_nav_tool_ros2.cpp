@@ -176,6 +176,11 @@ void WaypointNavTool::deactivate()
 
 }
 
+rclcpp::Node::SharedPtr WaypointNavTool::getNode() const
+{
+  return nh_;
+}
+
 // Handling mouse events
 
 int WaypointNavTool::processMouseEvent(rviz_common::ViewportMouseEvent& event)
@@ -696,4 +701,3 @@ void WaypointNavTool::load(const rviz_common::Config& config)
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(waypoint_nav_plugin::WaypointNavTool,rviz_common::Tool)
-

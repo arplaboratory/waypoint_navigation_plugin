@@ -437,6 +437,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="run_mppi_push_button">
+       <property name="text">
+        <string>Run MPPI</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="go_home_button">
        <property name="text">
         <string>Go Home</string>
